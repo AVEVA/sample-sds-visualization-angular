@@ -1,0 +1,48 @@
+<form [formGroup]="formGroup">
+  <mat-form-field>
+    <input
+      type="text"
+      placeholder="Namespace"
+      matInput
+      [formControl]="namespaceCtrl"
+      [matAutocomplete]="nsAuto"
+    />
+    <mat-autocomplete #nsAuto="matAutocomplete">
+      <mat-option *ngFor="let namespace of namespaces" [value]="namespace">
+        {{ namespace }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <mat-form-field>
+    <input
+      type="text"
+      placeholder="Stream"
+      matInput
+      [formControl]="streamCtrl"
+      [matAutocomplete]="strAuto"
+    />
+    <mat-autocomplete #strAuto="matAutocomplete">
+      <mat-option *ngFor="let stream of streams" [value]="stream">
+        {{ stream }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <mat-form-field>
+    <input
+      type="number"
+      placeholder="Hours"
+      matInput
+      [formControl]="hoursCtrl"
+      [matAutocomplete]="hrsAuto"
+    />
+    <mat-autocomplete #hrsAuto="matAutocomplete">
+      <mat-option *ngFor="let span of hours" [value]="span">
+        {{ span }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+</form>
+
+<div>
+  <canvas id="canvas" #canvas width="800" height="500"></canvas>
+</div>

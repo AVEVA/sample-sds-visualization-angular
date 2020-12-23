@@ -1,6 +1,11 @@
+:host {
+  > * + * {
+    margin-top: 1rem;
+  }
+}
+
 form {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
   max-width: 20rem;
 }

@@ -22,22 +22,22 @@
       [matAutocomplete]="strAuto"
     />
     <mat-autocomplete #strAuto="matAutocomplete">
-      <mat-option *ngFor="let stream of streams" [value]="stream">
-        {{ stream }}
+      <mat-option *ngFor="let stream of streams" [value]="stream.Id">
+        {{ stream.Id }}
       </mat-option>
     </mat-autocomplete>
   </mat-form-field>
   <mat-form-field>
     <input
       type="number"
-      placeholder="Hours"
+      placeholder="Events"
       matInput
-      [formControl]="hoursCtrl"
+      [formControl]="eventsCtrl"
       [matAutocomplete]="hrsAuto"
     />
     <mat-autocomplete #hrsAuto="matAutocomplete">
-      <mat-option *ngFor="let span of hours" [value]="span">
-        {{ span }}
+      <mat-option *ngFor="let count of events" [value]="count">
+        {{ count }}
       </mat-option>
     </mat-autocomplete>
   </mat-form-field>
@@ -45,4 +45,8 @@
 
 <div>
   <canvas id="canvas" #canvas width="800" height="500"></canvas>
+</div>
+
+<div *ngIf="lastUpdate">
+  Last update at {{ lastUpdate }}, retrieved {{ lastCount }} events
 </div>

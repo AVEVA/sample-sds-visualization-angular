@@ -18,5 +18,6 @@ export function configureAuth(
           silentRenew: true,
           silentRenewUrl: `${window.location.origin}/silent-renew.html`,
           logLevel: LogLevel.Warn,
+          customParams: { acr_values: `tenant:${settings.TenantId}` },
         });
 }

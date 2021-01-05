@@ -1,5 +1,6 @@
 import { LogLevel, OidcConfigService } from 'angular-auth-oidc-client';
-import { AppSettings, DEFAULT } from '../models';
+
+import { AppSettings, DEFAULT } from '~/models';
 
 export function configureAuth(
   oidcConfigService: OidcConfigService,

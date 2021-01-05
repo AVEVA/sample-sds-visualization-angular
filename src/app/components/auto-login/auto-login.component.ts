@@ -6,7 +6,7 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
   templateUrl: './auto-login.component.html',
 })
 export class AutoLoginComponent implements OnInit {
-  constructor(public oidcSecurityService: OidcSecurityService) {}
+  constructor(private oidcSecurityService: OidcSecurityService) {}
 
   ngOnInit(): void {
     this.oidcSecurityService.authorize();

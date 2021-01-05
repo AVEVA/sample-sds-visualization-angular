@@ -10,28 +10,21 @@ import { AppSettings, DEFAULT, SETTINGS } from './models';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  title = 'sample-sds-visualization-angular';
-
   DEFAULT = DEFAULT;
 
   constructor(
-    private oidcSecurityService: OidcSecurityService,
-    private router: Router,
+    public router: Router,
+    public oidcSecurityService: OidcSecurityService,
     @Inject(SETTINGS) public settings: AppSettings
   ) {}
 
   ngOnInit(): void {
     if (this.settings.TenantId !== DEFAULT) {
-      this.oidcSecurityService
-        .checkAuth()
-
-        .subscribe((isAuthenticated) => {
-          if (!isAuthenticated) {
-            if ('/autologin' !== window.location.pathname) {
-              this.router.navigate(['/autologin']);
-            }
-          }
-        });
+      this.oidcSecurityService.checkAuth().subscribe((isAuthenticated) => {
+        if (!isAuthenticated && window.location.pathname !== '/autologin') {
+          this.router.navigate(['/autologin']);
+        }
+      });
     }
   }
 }

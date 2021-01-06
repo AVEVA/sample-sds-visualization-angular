@@ -5,7 +5,19 @@
 }
 
 form {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  max-width: 20rem;
+  height: 2.5rem;
+
+  > mat-form-field {
+    flex-grow: 1;
+  }
+
+  > * + * {
+    margin-left: 1rem;
+  }
+}
+
+table {
+  width: 100%;
 }

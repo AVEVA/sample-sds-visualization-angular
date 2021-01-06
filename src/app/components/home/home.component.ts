@@ -2,12 +2,14 @@ import {
   Component,
   ElementRef,
   Inject,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { MatTable } from '@angular/material/table';
 import { Chart } from 'chart.js';
-import { interval } from 'rxjs';
+import { interval, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import {
@@ -19,6 +21,7 @@ import {
   SdsTypeCodeMap,
 } from '~/models';
 import { SdsProperty } from '~/models/sds-property';
+import { StreamConfig } from '~/models/stream-config';
 import { SdsService } from '~/services';
 
 const DEBOUNCE_TIME = 500;
@@ -28,30 +31,47 @@ const DEBOUNCE_TIME = 500;
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  @ViewChild(MatTable) table: MatTable<any>;
   @ViewChild('canvas') canvasEl: ElementRef;
 
   namespaceCtrl = new FormControl();
   streamCtrl = new FormControl();
-  eventsCtrl = new FormControl('100');
-  formGroup = new FormGroup({
+  streamForm = new FormGroup({
     namespace: this.namespaceCtrl,
     stream: this.streamCtrl,
+  });
+  eventsCtrl = new FormControl('100');
+  refreshCtrl = new FormControl('5');
+  chartForm = new FormGroup({
     events: this.eventsCtrl,
+    refresh: this.refreshCtrl,
   });
   chart: Chart;
   refresh$ = interval(5000);
+  subscription: Subscription;
 
   namespaces: string[] = [];
   types: SdsType[] = [];
   streams: SdsStream[] = [];
-  key: string;
-  isTime: boolean;
-  valueFields: string[];
+  refresh: number[] = [5, 15, 60, 300, 60000];
   events: number[] = [10, 50, 100, 500, 1000];
+  displayedColumns: string[] = [
+    'namespace',
+    'stream',
+    'lastUpdate',
+    'lastCount',
+  ];
 
-  lastUpdate: string;
-  lastCount: number;
+  isTime: boolean;
+  configs: StreamConfig[] = [];
+
+  get streamFormDisabled(): boolean {
+    return (
+      this.namespaces.indexOf(this.namespaceCtrl.value) === -1 ||
+      this.streams.find((s) => s.Id === this.streamCtrl.value) == null
+    );
+  }
 
   constructor(
     public sds: SdsService,
@@ -64,14 +84,21 @@ export class HomeComponent implements OnInit {
     });
     this.namespaceCtrl.valueChanges
       .pipe(debounceTime(DEBOUNCE_TIME))
-      .subscribe(this.namespaceChanges);
+      .subscribe((v) => this.namespaceChanges(v));
     this.streamCtrl.valueChanges
       .pipe(debounceTime(DEBOUNCE_TIME))
-      .subscribe(this.streamChanges);
+      .subscribe((v) => this.streamChanges(v));
     this.eventsCtrl.valueChanges
       .pipe(debounceTime(DEBOUNCE_TIME))
       .subscribe(this.updateData);
-    this.refresh$.subscribe(this.updateData);
+    this.refreshCtrl.valueChanges
+      .pipe(debounceTime(DEBOUNCE_TIME))
+      .subscribe((v) => this.refreshChanges(v));
+    this.subscription = this.refresh$.subscribe(() => this.updateData());
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   namespaceChanges(namespace: string): void {
@@ -81,13 +108,21 @@ export class HomeComponent implements OnInit {
 
   streamChanges(stream: string): void {
     this.queryStreams(this.namespaceCtrl.value, stream);
-    this.setupDatasets(stream);
+  }
+
+  refreshChanges(refresh: string): void {
+    const num = Number(refresh);
+    if (!isNaN(num)) {
+      this.subscription.unsubscribe();
+      this.refresh$ = interval(num * 1000);
+      this.subscription = this.refresh$.subscribe(() => this.updateData());
+    }
   }
 
   isTypeSupported(type: SdsType): boolean {
     return (
       type.SdsTypeCode === SdsTypeCode.Object &&
-      type.Properties.some(this.isPropertyKey)
+      type.Properties.some((p) => this.isPropertyKey(p))
     );
   }
 
@@ -101,7 +136,7 @@ export class HomeComponent implements OnInit {
 
   queryTypes(namespace: string): void {
     this.sds.getTypes(namespace).subscribe((r) => {
-      this.types = r.filter(this.isTypeSupported);
+      this.types = r.filter((t) => this.isTypeSupported(t));
     });
   }
 
@@ -115,28 +150,35 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  setupDatasets(streamId: string): void {
-    this.lastUpdate = null;
-    this.lastCount = null;
-    const stream = this.streams.find((s) => s.Id === streamId);
+  addStream(): void {
+    const stream = this.streams.find((s) => s.Id === this.streamCtrl.value);
     if (stream) {
       const type = this.types.find((t) => t.Id === stream.TypeId);
-      const key = type.Properties.find(this.isPropertyKey);
-      if (key) {
-        this.key = key.Id;
-        this.isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
-        if (this.chart) {
-          this.chart.destroy();
-        }
-        this.chart = this.getChart();
-        if (type) {
-          this.valueFields = type.Properties.filter(
-            (p) => !p.IsKey && SdsTypeCodeMap[p.SdsType.SdsTypeCode]
-          ).map((p) => p.Id);
-          for (const k of this.valueFields) {
+      const key = type.Properties.find((p) => this.isPropertyKey(p));
+      if (type && key) {
+        const isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
+        if (this.isTime != null && this.isTime !== isTime) {
+          console.warn('Stream index type does not match');
+        } else {
+          this.isTime = isTime;
+          const config: StreamConfig = {
+            namespace: this.namespaceCtrl.value,
+            stream: stream.Id,
+            key: key.Id,
+            valueFields: type.Properties.filter(
+              (p) => !p.IsKey && SdsTypeCodeMap[p.SdsType.SdsTypeCode]
+            ).map((p) => p.Id),
+          };
+          this.configs.push(config);
+
+          if (!this.chart) {
+            this.chart = this.getChart();
+          }
+
+          for (const k of config.valueFields) {
             const color = this.getColor();
             this.chart.data.datasets.push({
-              label: k,
+              label: `${config.stream}.${k}`,
               borderColor: color,
               fill: false,
               data: [],
@@ -144,6 +186,11 @@ export class HomeComponent implements OnInit {
           }
           this.chart.update();
           this.updateData();
+          this.streamCtrl.setValue('');
+
+          if (this.table) {
+            this.table.renderRows();
+          }
         }
       }
     }
@@ -176,29 +223,29 @@ export class HomeComponent implements OnInit {
   }
 
   updateData(): void {
-    const namespace = this.namespaceCtrl.value;
-    const stream = this.streamCtrl.value;
     const events = this.eventsCtrl.value;
-    if (
-      this.namespaces.indexOf(namespace) !== -1 &&
-      this.streams.some((s) => s.Id === stream) &&
-      events
-    ) {
-      this.sds.getLastValue(namespace, stream).subscribe((last) => {
-        const startIndex = last[this.key];
+    for (const s of this.configs) {
+      this.sds.getLastValue(s.namespace, s.stream).subscribe((last) => {
+        const startIndex = last[s.key];
         this.sds
-          .getRangeValues(namespace, stream, startIndex, Number(events), true)
+          .getRangeValues(
+            s.namespace,
+            s.stream,
+            startIndex,
+            Number(events),
+            true
+          )
           .subscribe((data: any[]) => {
             if (data?.length > 0) {
               const datasets: { [key: string]: Chart.ChartPoint[] } = {};
-              for (const f of this.valueFields) {
-                datasets[f] = [];
+              for (const f of s.valueFields) {
+                datasets[`${s.stream}.${f}`] = [];
               }
               for (const e of data) {
-                const keyVal = e[this.key];
+                const keyVal = e[s.key];
                 const x = this.isTime ? new Date(keyVal) : keyVal;
-                for (const f of this.valueFields) {
-                  datasets[f].push({ x, y: e[f] });
+                for (const f of s.valueFields) {
+                  datasets[`${s.stream}.${f}`].push({ x, y: e[f] });
                 }
               }
               this.updateChart(datasets);
@@ -206,8 +253,8 @@ export class HomeComponent implements OnInit {
               console.warn('No data found for time range');
             }
 
-            this.lastUpdate = new Date().toString();
-            this.lastCount = data.length;
+            s.lastUpdate = new Date().toString();
+            s.lastCount = data.length;
           });
       });
     }
@@ -215,7 +262,9 @@ export class HomeComponent implements OnInit {
 
   updateChart(datasets: { [key: string]: Chart.ChartPoint[] }): void {
     this.chart.data.datasets.forEach((d) => {
-      d.data = datasets[d.label];
+      if (datasets[d.label]) {
+        d.data = datasets[d.label];
+      }
     });
 
     this.chart.update();

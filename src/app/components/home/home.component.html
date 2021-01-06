@@ -1,4 +1,4 @@
-<form [formGroup]="formGroup">
+<form [formGroup]="streamForm">
   <mat-form-field>
     <input
       type="text"
@@ -27,26 +27,74 @@
       </mat-option>
     </mat-autocomplete>
   </mat-form-field>
-  <mat-form-field>
-    <input
-      type="number"
-      placeholder="Events"
-      matInput
-      [formControl]="eventsCtrl"
-      [matAutocomplete]="hrsAuto"
-    />
-    <mat-autocomplete #hrsAuto="matAutocomplete">
-      <mat-option *ngFor="let count of events" [value]="count">
-        {{ count }}
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="streamFormDisabled"
+    (click)="addStream()"
+  >
+    Add
+  </button>
 </form>
+
+<ng-container *ngIf="configs.length">
+  <table mat-table [dataSource]="configs" class="mat-elevation-z8">
+    <ng-container matColumnDef="namespace">
+      <th mat-header-cell *matHeaderCellDef>Namespace</th>
+      <td mat-cell *matCellDef="let config">{{ config.namespace }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="stream">
+      <th mat-header-cell *matHeaderCellDef>Stream</th>
+      <td mat-cell *matCellDef="let config">{{ config.stream }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="lastUpdate">
+      <th mat-header-cell *matHeaderCellDef>Last Update</th>
+      <td mat-cell *matCellDef="let config">{{ config.lastUpdate }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="lastCount">
+      <th mat-header-cell *matHeaderCellDef>Last Count</th>
+      <td mat-cell *matCellDef="let config">{{ config.lastCount }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  <form [formGroup]="chartForm">
+    <mat-form-field>
+      <input
+        type="number"
+        placeholder="Events"
+        matInput
+        [formControl]="eventsCtrl"
+        [matAutocomplete]="eventsAuto"
+      />
+      <mat-autocomplete #eventsAuto="matAutocomplete">
+        <mat-option *ngFor="let count of events" [value]="count">
+          {{ count }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-form-field>
+      <input
+        type="number"
+        placeholder="Refresh (s)"
+        matInput
+        [formControl]="refreshCtrl"
+        [matAutocomplete]="refreshAuto"
+      />
+      <mat-autocomplete #refreshAuto="matAutocomplete">
+        <mat-option *ngFor="let sec of refresh" [value]="sec">
+          {{ sec }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </form>
+</ng-container>
 
 <div>
   <canvas id="canvas" #canvas width="800" height="500"></canvas>
-</div>
-
-<div *ngIf="lastUpdate">
-  Last update at {{ lastUpdate }}, retrieved {{ lastCount }} events
 </div>

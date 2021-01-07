@@ -9,7 +9,7 @@ import {
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTable } from '@angular/material/table';
 import { Chart } from 'chart.js';
-import { interval, Subscription } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import {
@@ -24,8 +24,6 @@ import { SdsProperty } from '~/models/sds-property';
 import { StreamConfig } from '~/models/stream-config';
 import { SdsService } from '~/services';
 
-const DEBOUNCE_TIME = 500;
-
 @Component({
   selector: 'app-home-component',
   templateUrl: './home.component.html',
@@ -35,6 +33,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild(MatTable) table: MatTable<any>;
   @ViewChild('canvas') canvasEl: ElementRef;
 
+  // Form Controls
   namespaceCtrl = new FormControl();
   streamCtrl = new FormControl();
   streamForm = new FormGroup({
@@ -47,30 +46,44 @@ export class HomeComponent implements OnInit, OnDestroy {
     events: this.eventsCtrl,
     refresh: this.refreshCtrl,
   });
-  chart: Chart;
-  refresh$ = interval(5000);
-  subscription: Subscription;
 
+  /** Number of ms to wait after form control changes */
+  debounce = 500;
+  /** Chart.js Chart */
+  chart: Chart;
+  /** Refresh timer */
+  refresh$ = interval(5000);
+  /** Refresh subscription, which should be cleaned up */
+  subscription: Subscription;
+  /** List of namespaces in the tenant */
   namespaces: string[] = [];
+  /** List of supported types in the namespace */
   types: SdsType[] = [];
+  /** List of supported streams in the namespace */
   streams: SdsStream[] = [];
+  /** Suggested refresh interval options */
   refresh: number[] = [5, 15, 60, 300, 60000];
+  /** Suggested number of events options */
   events: number[] = [10, 50, 100, 500, 1000];
+  /** Displayed columns in streams table */
   displayedColumns: string[] = [
     'namespace',
     'stream',
     'lastUpdate',
     'lastCount',
   ];
-
+  /** Whether the Chart is currently using time as an index, vs numeric index. All streams should match. */
   isTime: boolean;
+  /** List of stream configurations that have been added */
   configs: StreamConfig[] = [];
 
+  /** Whether to disable the stream add button, the stream must be supported and have an allowed key */
   get streamFormDisabled(): boolean {
-    return (
-      this.namespaces.indexOf(this.namespaceCtrl.value) === -1 ||
-      this.streams.find((s) => s.Id === this.streamCtrl.value) == null
-    );
+    const stream = this.streams.find((s) => s.Id === this.streamCtrl.value);
+    const type = this.types.find((t) => t.Id === stream?.TypeId);
+    const key = type?.Properties?.find((p) => this.isPropertyKey(p));
+    const isTime = key && key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
+    return isTime == null || (this.isTime != null && this.isTime !== isTime);
   }
 
   constructor(
@@ -78,47 +91,55 @@ export class HomeComponent implements OnInit, OnDestroy {
     @Inject(SETTINGS) public settings: AppSettings
   ) {}
 
+  /** Set up the component when Angular is ready */
   ngOnInit(): void {
     this.sds.getNamespaces().subscribe((r) => {
       this.namespaces = r;
     });
     this.namespaceCtrl.valueChanges
-      .pipe(debounceTime(DEBOUNCE_TIME))
+      .pipe(debounceTime(this.debounce))
       .subscribe((v) => this.namespaceChanges(v));
     this.streamCtrl.valueChanges
-      .pipe(debounceTime(DEBOUNCE_TIME))
-      .subscribe((v) => this.streamChanges(v));
+      .pipe(debounceTime(this.debounce))
+      .subscribe((v) => this.queryStreams(this.namespaceCtrl.value, v));
     this.eventsCtrl.valueChanges
-      .pipe(debounceTime(DEBOUNCE_TIME))
-      .subscribe(this.updateData);
+      .pipe(debounceTime(this.debounce))
+      .subscribe(() => this.updateData());
     this.refreshCtrl.valueChanges
-      .pipe(debounceTime(DEBOUNCE_TIME))
+      .pipe(debounceTime(this.debounce))
       .subscribe((v) => this.refreshChanges(v));
+    this.setupRefresh(interval(5));
+  }
+
+  /** Fired when component is left, to clean up */
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
+
+  /** Sets up a new refresh interval timer and cleans up old subscription */
+  setupRefresh(int: Observable<number>): void {
+    this.subscription?.unsubscribe();
+    this.refresh$ = int;
     this.subscription = this.refresh$.subscribe(() => this.updateData());
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-
+  /** Handles changes to namespace control, queries for supported types and streams */
   namespaceChanges(namespace: string): void {
-    this.queryTypes(namespace);
-    this.queryStreams(namespace, this.streamCtrl.value);
+    this.sds.getTypes(namespace).subscribe((r) => {
+      this.types = r.filter((t) => this.isTypeSupported(t));
+      this.queryStreams(namespace, this.streamCtrl.value);
+    });
   }
 
-  streamChanges(stream: string): void {
-    this.queryStreams(this.namespaceCtrl.value, stream);
-  }
-
+  /** Handles changes to refresh control, sets up new refresh interval timer */
   refreshChanges(refresh: string): void {
     const num = Number(refresh);
     if (!isNaN(num)) {
-      this.subscription.unsubscribe();
-      this.refresh$ = interval(num * 1000);
-      this.subscription = this.refresh$.subscribe(() => this.updateData());
+      this.setupRefresh(interval(num));
     }
   }
 
+  /** Whether the passed type is supported, must be an object with valid index */
   isTypeSupported(type: SdsType): boolean {
     return (
       type.SdsTypeCode === SdsTypeCode.Object &&
@@ -126,20 +147,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
+  /** Whether the passed property is a supported index, must be order 0 and supported SdsTypeCode */
   isPropertyKey(prop: SdsProperty): boolean {
     return (
       prop.IsKey &&
       (prop.Order || 0) === 0 &&
-      SdsTypeCodeMap[prop.SdsType.SdsTypeCode] != null
+      SdsTypeCodeMap[prop.SdsType.SdsTypeCode] > 0
     );
   }
 
-  queryTypes(namespace: string): void {
-    this.sds.getTypes(namespace).subscribe((r) => {
-      this.types = r.filter((t) => this.isTypeSupported(t));
-    });
-  }
-
+  /** Query for streams in a namespace and filter for streams with supported type */
   queryStreams(namespace: string, query: string): void {
     if (this.namespaces.indexOf(namespace) !== -1) {
       this.sds.getStreams(namespace, query).subscribe((r) => {
@@ -150,52 +167,44 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Add a stream to the chart */
   addStream(): void {
+    // console.log(this.streamCtrl.value);
     const stream = this.streams.find((s) => s.Id === this.streamCtrl.value);
-    if (stream) {
-      const type = this.types.find((t) => t.Id === stream.TypeId);
-      const key = type.Properties.find((p) => this.isPropertyKey(p));
-      if (type && key) {
-        const isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
-        if (this.isTime != null && this.isTime !== isTime) {
-          console.warn('Stream index type does not match');
-        } else {
-          this.isTime = isTime;
-          const config: StreamConfig = {
-            namespace: this.namespaceCtrl.value,
-            stream: stream.Id,
-            key: key.Id,
-            valueFields: type.Properties.filter(
-              (p) => !p.IsKey && SdsTypeCodeMap[p.SdsType.SdsTypeCode]
-            ).map((p) => p.Id),
-          };
-          this.configs.push(config);
+    const type = this.types.find((t) => t.Id === stream.TypeId);
+    const key = type.Properties.find((p) => this.isPropertyKey(p));
+    // This should either initialize isTime or not change its value
+    this.isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
+    const config: StreamConfig = {
+      namespace: this.namespaceCtrl.value,
+      stream: stream.Id,
+      key: key.Id,
+      valueFields: type.Properties.filter(
+        (p) => !p.IsKey && SdsTypeCodeMap[p.SdsType.SdsTypeCode]
+      ).map((p) => p.Id),
+    };
+    this.configs.push(config);
 
-          if (!this.chart) {
-            this.chart = this.getChart();
-          }
-
-          for (const k of config.valueFields) {
-            const color = this.getColor();
-            this.chart.data.datasets.push({
-              label: `${config.stream}.${k}`,
-              borderColor: color,
-              fill: false,
-              data: [],
-            });
-          }
-          this.chart.update();
-          this.updateData();
-          this.streamCtrl.setValue('');
-
-          if (this.table) {
-            this.table.renderRows();
-          }
-        }
-      }
+    if (!this.chart) {
+      this.chart = this.getChart();
     }
+
+    for (const k of config.valueFields) {
+      const color = this.getColor();
+      this.chart.data.datasets.push({
+        label: `${config.stream}.${k}`,
+        borderColor: color,
+        fill: false,
+        data: [],
+      });
+    }
+    this.chart.update();
+    this.updateData();
+    this.streamCtrl.setValue('');
+    this.table?.renderRows();
   }
 
+  /** Gets a new chart object with configuration */
   getChart(): Chart {
     return new Chart(this.canvasEl.nativeElement, {
       type: 'line',
@@ -222,6 +231,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Uses configuration objects to query SDS and get latest data for the chart */
   updateData(): void {
     const events = this.eventsCtrl.value;
     for (const s of this.configs) {
@@ -249,17 +259,16 @@ export class HomeComponent implements OnInit, OnDestroy {
                 }
               }
               this.updateChart(datasets);
-            } else {
-              console.warn('No data found for time range');
             }
 
             s.lastUpdate = new Date().toString();
-            s.lastCount = data.length;
+            s.lastCount = data?.length || 0;
           });
       });
     }
   }
 
+  /** Applies latest data for fields of a specific stream to the chart */
   updateChart(datasets: { [key: string]: Chart.ChartPoint[] }): void {
     this.chart.data.datasets.forEach((d) => {
       if (datasets[d.label]) {
@@ -270,6 +279,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.chart.update();
   }
 
+  /** Gets a new random color for a trend in the chart */
   getColor(): string {
     const r = Math.floor(Math.random() * 255);
     const g = Math.floor(Math.random() * 255);

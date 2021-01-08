@@ -20,7 +20,7 @@ export class SdsService {
   }
 
   constructor(
-    @Inject(SETTINGS) private settings: AppSettings,
+    @Inject(SETTINGS) public settings: AppSettings,
     public http: HttpClient
   ) {}
 

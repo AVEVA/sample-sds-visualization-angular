@@ -108,7 +108,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.refreshCtrl.valueChanges
       .pipe(debounceTime(this.debounce))
       .subscribe((v) => this.refreshChanges(v));
-    this.setupRefresh(interval(5));
+    this.setupRefresh(interval(5000));
   }
 
   /** Fired when component is left, to clean up */
@@ -135,7 +135,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   refreshChanges(refresh: string): void {
     const num = Number(refresh);
     if (!isNaN(num)) {
-      this.setupRefresh(interval(num));
+      this.setupRefresh(interval(num * 1000));
     }
   }
 

@@ -1,4 +1,8 @@
-# SampleSdsVisualizationAngular
+# Sequential Data Store Angular Visualization Sample
+
+**Version:**: 1.0.0
+
+**WARNING:** The web server used in this sample is intended for use in testing or debugging sample applications locally. It has not been reviewed for security issues.
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.5.
 
@@ -25,3 +29,8 @@ Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protrac
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+---
+
+For the main OCS page [ReadMe](https://github.com/osisoft/OSI-Samples-OCS)  
+For the main samples page on master [ReadMe](https://github.com/osisoft/OSI-Samples)

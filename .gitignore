@@ -45,4 +45,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# Sample files
+TestResults
 appsettings.json

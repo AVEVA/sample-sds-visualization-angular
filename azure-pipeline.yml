@@ -70,7 +70,7 @@ jobs:
           testResultsFormat: JUnit
           testResultsFiles: '*.xml'
           failTaskOnFailedTests: true
-          searchFolder: '$(Build.SourcesDirectory)$(projPath)/TestResults'
+          searchFolder: '$(Build.SourcesDirectory)$(projPath)/results'
           testRunTitle: '$(Agent.JobName) on $(imageName)'
         displayName: 'Publish test results'
         condition: always()

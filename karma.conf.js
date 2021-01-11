@@ -25,7 +25,7 @@ module.exports = function (config) {
     jasmineHtmlReporter: {
       suppressAll: true, // removes the duplicated traces
     },
-    junitReporter: { outputDir: 'TestResults' },
+    junitReporter: { outputDir: 'results' },
     coverageReporter: {
       dir: require('path').join(__dirname, './coverage'),
       subdir: '.',

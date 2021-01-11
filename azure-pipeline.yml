@@ -61,7 +61,7 @@ jobs:
       #   displayName: 'Update webdriver-manager'
       #   condition: eq(variables['imageName'],'windows-latest')
 
-      - script: npm run test
+      - script: npm run test -- --watch=false
         workingDirectory: $(Build.SourcesDirectory)$(projPath)/
         displayName: 'Run tests'
 

@@ -2,9 +2,29 @@
 
 **Version:**: 1.0.0
 
+[![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/osisoft.sample-sds-visualization-angular?repoName=osisoft%2Fsample-sds-visualization-angular&branchName=master)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&repoName=osisoft%2Fsample-sds-visualization-angular&branchName=master)
+
 **WARNING:** The web server used in this sample is intended for use in testing or debugging sample applications locally. It has not been reviewed for security issues.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.5.
+## Prerequisites
+
+- [NodeJS and NPM](https://nodejs.org/en/)
+- [Angular CLI](https://cli.angular.io/) (`npm install -g @angular/cli`)
+- A modern, evergreen browser, such as the latest version of [Google Chrome](https://www.google.com/chrome/), [Mozilla Firefox](https://www.mozilla.org/firefox/), or [Microsoft Edge](https://www.microsoft.com/edge)
+
+This application will use local port 4200 by default.
+
+**Note: This sample application is hosted on HTTP. This is not secure. You should use a certificate and HTTPS.**
+
+This sample was developed using Node version 12.16.1.
+
+## Configuring the sample
+
+Before running the sample, you must first configure the `appsettings.json` file. The [appsettings.placeholder.json](src/app/appsettings.placeholder.json) file should be renamed to `appsettings.json`, and configured. This repository's `.gitignore` rules should prevent this file from ever being checked in to any fork or branch, to ensure sensitive information is not compromised.
+
+### OSIsoft Cloud Services
+
+-
 
 ## Development server
 

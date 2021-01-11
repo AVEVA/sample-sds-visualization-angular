@@ -1,5 +1,7 @@
+import { SdsNamespace } from './sds-namespace';
+
 export interface StreamConfig {
-  namespace: string;
+  namespace: SdsNamespace;
   stream: string;
   key: string;
   valueFields: string[];

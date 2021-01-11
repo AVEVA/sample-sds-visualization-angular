@@ -4,13 +4,13 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { throwError } from 'rxjs';
 
 import { mockSettings } from 'src/tests';
 import {
   AppSettings,
   DEFAULT,
   DIAGNOSTICS,
+  SdsNamespace,
   SdsStream,
   SdsType,
   SdsTypeCode,
@@ -22,6 +22,13 @@ describe('SdsService', () => {
   let service: SdsService;
   let http: HttpTestingController;
   const settings: AppSettings = { ...mockSettings };
+  const namespace: SdsNamespace = {
+    Id: 'Id',
+    Description: 'Description',
+    InstanceId: 'InstanceId',
+    Region: 'Region',
+    Self: 'Self',
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -37,6 +44,17 @@ describe('SdsService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('edsNamespace', () => {
+    it('should create a namespace object for EDS', () => {
+      const id = 'id';
+      const result = service.edsNamespace(id);
+      expect(result.Id).toEqual(id);
+      expect(result.Self).toEqual(
+        'Resource/api/v1/Tenants/TenantId/Namespaces/' + id
+      );
+    });
+  });
+
   describe('getNamespaces', () => {
     afterEach(() => {
       settings.TenantId = mockSettings.TenantId;
@@ -44,16 +62,20 @@ describe('SdsService', () => {
 
     it('should get hard coded list for EDS', () => {
       settings.TenantId = DEFAULT;
-      let result: string[];
+      let result: SdsNamespace[];
       service.getNamespaces().subscribe((r) => (result = r));
-      expect(result).toEqual([DEFAULT, DIAGNOSTICS]);
+      expect(result).toEqual([
+        service.edsNamespace(DEFAULT),
+        service.edsNamespace(DIAGNOSTICS),
+      ]);
     });
 
     it('should get namespaces from SDS', () => {
-      let result: string[];
+      let result: SdsNamespace[];
       service.getNamespaces().subscribe((r) => (result = r));
-      http.expectOne(service.baseUrl).flush([{ Id: 'Id' }]);
-      expect(result).toEqual(['Id']);
+      const ns = service.edsNamespace('test');
+      http.expectOne(service.baseUrl).flush([ns]);
+      expect(result).toEqual([ns]);
     });
   });
 
@@ -67,8 +89,8 @@ describe('SdsService', () => {
         Properties: null,
       };
       let result: SdsType[];
-      service.getTypes('Namespace').subscribe((r) => (result = r));
-      http.expectOne(`${service.baseUrl}/Namespace/Types`).flush([type]);
+      service.getTypes(namespace).subscribe((r) => (result = r));
+      http.expectOne('Self/Types').flush([type]);
       expect(result).toEqual([type]);
     });
   });
@@ -82,10 +104,8 @@ describe('SdsService', () => {
         TypeId: 'TypeId',
       };
       let result: SdsStream[];
-      service.getStreams('Namespace', 'Query').subscribe((r) => (result = r));
-      http
-        .expectOne(`${service.baseUrl}/Namespace/Streams?query=Query*`)
-        .flush([stream]);
+      service.getStreams(namespace, 'Query').subscribe((r) => (result = r));
+      http.expectOne('Self/Streams?query=Query*').flush([stream]);
       expect(result).toEqual([stream]);
     });
 
@@ -97,10 +117,8 @@ describe('SdsService', () => {
         TypeId: 'TypeId',
       };
       let result: SdsStream[];
-      service.getStreams('Namespace', null).subscribe((r) => (result = r));
-      http
-        .expectOne(`${service.baseUrl}/Namespace/Streams?query=*`)
-        .flush([stream]);
+      service.getStreams(namespace, null).subscribe((r) => (result = r));
+      http.expectOne('Self/Streams?query=*').flush([stream]);
       expect(result).toEqual([stream]);
     });
   });
@@ -109,12 +127,8 @@ describe('SdsService', () => {
     it('should get the latest value from SDS', () => {
       const last = 'last';
       let result: any;
-      service
-        .getLastValue('Namespace', 'Stream')
-        .subscribe((r) => (result = r));
-      http
-        .expectOne(`${service.baseUrl}/Namespace/Streams/Stream/Data/Last`)
-        .flush(last);
+      service.getLastValue(namespace, 'Stream').subscribe((r) => (result = r));
+      http.expectOne('Self/Streams/Stream/Data/Last').flush(last);
       expect(result).toEqual(last);
     });
   });
@@ -124,12 +138,10 @@ describe('SdsService', () => {
       const data = ['a', 'b', 'c'];
       let result: any[];
       service
-        .getRangeValues('Namespace', 'Stream', 'StartIndex', 3)
+        .getRangeValues(namespace, 'Stream', 'StartIndex', 3)
         .subscribe((r) => (result = r));
       http
-        .expectOne(
-          `${service.baseUrl}/Namespace/Streams/Stream/Data?startIndex=StartIndex&count=3`
-        )
+        .expectOne('Self/Streams/Stream/Data?startIndex=StartIndex&count=3')
         .flush(data);
       expect(result).toEqual(data);
     });
@@ -138,11 +150,11 @@ describe('SdsService', () => {
       const data = ['a', 'b', 'c'];
       let result: any[];
       service
-        .getRangeValues('Namespace', 'Stream', 'StartIndex', 3, true)
+        .getRangeValues(namespace, 'Stream', 'StartIndex', 3, true)
         .subscribe((r) => (result = r));
       http
         .expectOne(
-          `${service.baseUrl}/Namespace/Streams/Stream/Data?startIndex=StartIndex&count=3&reversed=true`
+          'Self/Streams/Stream/Data?startIndex=StartIndex&count=3&reversed=true'
         )
         .flush(data);
       expect(result).toEqual(data);

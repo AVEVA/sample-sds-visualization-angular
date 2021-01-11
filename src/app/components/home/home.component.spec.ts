@@ -16,6 +16,7 @@ import { of, Subject } from 'rxjs';
 import { mockSettings } from 'src/tests';
 import {
   AppSettings,
+  SdsNamespace,
   SdsStream,
   SdsType,
   SdsTypeCode,
@@ -30,6 +31,13 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let sds: SdsService;
   const settings: AppSettings = { ...mockSettings };
+  const namespace: SdsNamespace = {
+    Id: 'Id',
+    Description: 'Description',
+    InstanceId: 'InstanceId',
+    Region: 'Region',
+    Self: 'Self',
+  };
   const stream: SdsStream = {
     Id: 'StreamId',
     Name: '',
@@ -153,10 +161,9 @@ describe('HomeComponent', () => {
 
   describe('ngOnInit', () => {
     it('should get list of namespaces', () => {
-      const value = ['test'];
-      spyOn(sds, 'getNamespaces').and.returnValue(of(value));
+      spyOn(sds, 'getNamespaces').and.returnValue(of([namespace]));
       fixture.detectChanges();
-      expect(component.namespaces).toEqual(value);
+      expect(component.namespaces).toEqual({ [namespace.Id]: namespace });
     });
 
     it('should set up component subscriptions', fakeAsync(() => {
@@ -201,11 +208,19 @@ describe('HomeComponent', () => {
         of([supportedType, unsupportedType])
       );
       spyOn(component, 'queryStreams');
-      const value = 'namespace';
-      component.namespaceChanges(value);
-      expect(sds.getTypes).toHaveBeenCalledWith(value);
+      component.namespaces = { [namespace.Id]: namespace };
+      component.namespaceChanges(namespace.Id);
+      expect(sds.getTypes).toHaveBeenCalledWith(namespace);
       expect(component.types).toEqual([supportedType]);
-      expect(component.queryStreams).toHaveBeenCalledWith(value, null);
+      expect(component.queryStreams).toHaveBeenCalledWith(namespace.Id, null);
+    });
+
+    it('should do nothing if namespace is not recognized', () => {
+      spyOn(sds, 'getTypes').and.returnValue(
+        of([supportedType, unsupportedType])
+      );
+      component.namespaceChanges(namespace.Id);
+      expect(sds.getTypes).not.toHaveBeenCalled();
     });
   });
 
@@ -361,18 +376,18 @@ describe('HomeComponent', () => {
 
     it('should make call to SDS and filter out streams with unsupported type', () => {
       spyOn(sds, 'getStreams').and.returnValue(of([null]));
-      component.namespaces = ['n'];
-      component.queryStreams('n', 'q');
-      expect(sds.getStreams).toHaveBeenCalledWith('n', 'q');
+      component.namespaces = { [namespace.Id]: namespace };
+      component.queryStreams(namespace.Id, 'q');
+      expect(sds.getStreams).toHaveBeenCalledWith(namespace, 'q');
       expect(component.streams).toEqual([]);
     });
 
     it('should make call to SDS and set supported streams', () => {
       spyOn(sds, 'getStreams').and.returnValue(of([stream]));
-      component.namespaces = ['n'];
+      component.namespaces = { [namespace.Id]: namespace };
       component.types = [supportedType];
-      component.queryStreams('n', 'q');
-      expect(sds.getStreams).toHaveBeenCalledWith('n', 'q');
+      component.queryStreams(namespace.Id, 'q');
+      expect(sds.getStreams).toHaveBeenCalledWith(namespace, 'q');
       expect(component.streams).toEqual([stream]);
     });
   });
@@ -388,8 +403,10 @@ describe('HomeComponent', () => {
       const table = { renderRows: () => {} } as any;
       spyOn(table, 'renderRows');
       component.table = table;
+      component.namespaces = { [namespace.Id]: namespace };
       component.streams = [stream];
       component.types = [supportedType];
+      component.namespaceCtrl.setValue(namespace.Id);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.configs.length).toEqual(1);
@@ -404,8 +421,10 @@ describe('HomeComponent', () => {
     it('should skip creating a chart if one already exists', () => {
       component.chart = { update: () => {}, data: { datasets: [] } } as any;
       spyOn(component, 'getChart');
+      component.namespaces = { [namespace.Id]: namespace };
       component.streams = [stream];
       component.types = [supportedType];
+      component.namespaceCtrl.setValue(namespace.Id);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.getChart).not.toHaveBeenCalled();
@@ -429,7 +448,13 @@ describe('HomeComponent', () => {
 
   describe('updateData', () => {
     const config: StreamConfig = {
-      namespace: 'namespace',
+      namespace: {
+        Id: 'Id',
+        Description: 'Description',
+        InstanceId: 'InstanceId',
+        Region: 'Region',
+        Self: 'Self',
+      },
       stream: 'stream',
       key: 'key',
       valueFields: ['value'],
@@ -438,12 +463,15 @@ describe('HomeComponent', () => {
     const last: any = { ['key']: 'last' };
     const data: any[] = [{ ['key']: 'last', ['value']: 'value' }];
 
-    it('should get data for streams', () => {
+    beforeEach(() => {
       fixture.detectChanges();
       spyOn(sds, 'getLastValue').and.returnValue(of(last));
-      spyOn(sds, 'getRangeValues').and.returnValue(of(data));
       spyOn(component, 'updateChart');
       component.configs = [{ ...config }];
+    });
+
+    it('should get data for streams', () => {
+      spyOn(sds, 'getRangeValues').and.returnValue(of(data));
       component.updateData();
       expect(sds.getLastValue).toHaveBeenCalledWith(
         config.namespace,
@@ -462,11 +490,7 @@ describe('HomeComponent', () => {
     });
 
     it('should handle date indices', () => {
-      fixture.detectChanges();
-      spyOn(sds, 'getLastValue').and.returnValue(of(last));
       spyOn(sds, 'getRangeValues').and.returnValue(of(data));
-      spyOn(component, 'updateChart');
-      component.configs = [{ ...config }];
       component.isTime = true;
       component.updateData();
       expect(sds.getLastValue).toHaveBeenCalledWith(
@@ -486,11 +510,7 @@ describe('HomeComponent', () => {
     });
 
     it('should handle empty data response', () => {
-      fixture.detectChanges();
-      spyOn(sds, 'getLastValue').and.returnValue(of(last));
       spyOn(sds, 'getRangeValues').and.returnValue(of(null));
-      spyOn(component, 'updateChart');
-      component.configs = [{ ...config }];
       component.isTime = true;
       component.updateData();
       expect(sds.getLastValue).toHaveBeenCalledWith(

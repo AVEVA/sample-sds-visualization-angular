@@ -24,41 +24,51 @@ export class SdsService {
     public http: HttpClient
   ) {}
 
-  getNamespaces(): Observable<string[]> {
+  edsNamespace(id: string): SdsNamespace {
+    return {
+      Id: id,
+      Description: '',
+      InstanceId: '',
+      Region: '',
+      Self: `${this.baseUrl}/${id}`,
+    };
+  }
+
+  getNamespaces(): Observable<SdsNamespace[]> {
     if (this.settings.TenantId === DEFAULT) {
-      return of([DEFAULT, DIAGNOSTICS]);
+      return of([this.edsNamespace(DEFAULT), this.edsNamespace(DIAGNOSTICS)]);
     } else {
       return this.http.get(this.baseUrl).pipe(
-        map((r) => (r as SdsNamespace[]).map((n) => n.Id)),
+        map((r) => r as SdsNamespace[]),
         catchError(this.handleError('Error getting namespaces'))
       );
     }
   }
 
-  getTypes(namespace: string): Observable<SdsType[]> {
-    return this.http.get(`${this.baseUrl}/${namespace}/Types`).pipe(
+  getTypes(namespace: SdsNamespace): Observable<SdsType[]> {
+    return this.http.get(`${namespace.Self}/Types`).pipe(
       map((r) => r as SdsType[]),
       catchError(this.handleError('Error getting types'))
     );
   }
 
-  getStreams(namespace: string, query: string): Observable<SdsStream[]> {
+  getStreams(namespace: SdsNamespace, query: string): Observable<SdsStream[]> {
     return this.http
-      .get(`${this.baseUrl}/${namespace}/Streams?query=${query || ''}*`)
+      .get(`${namespace.Self}/Streams?query=${query || ''}*`)
       .pipe(
         map((r) => r as SdsStream[]),
         catchError(this.handleError('Error getting streams'))
       );
   }
 
-  getLastValue(namespace: string, stream: string): Observable<any> {
+  getLastValue(namespace: SdsNamespace, stream: string): Observable<any> {
     return this.http
-      .get(`${this.baseUrl}/${namespace}/Streams/${stream}/Data/Last`)
+      .get(`${namespace.Self}/Streams/${stream}/Data/Last`)
       .pipe(catchError(this.handleError('Error getting last value')));
   }
 
   getRangeValues(
-    namespace: string,
+    namespace: SdsNamespace,
     stream: string,
     startIndex: string,
     count: number,
@@ -67,8 +77,8 @@ export class SdsService {
     return this.http
       .get(
         `${
-          this.baseUrl
-        }/${namespace}/Streams/${stream}/Data?startIndex=${startIndex}&count=${count}${
+          namespace.Self
+        }/Streams/${stream}/Data?startIndex=${startIndex}&count=${count}${
           reversed ? '&reversed=true' : ''
         }`,
         {

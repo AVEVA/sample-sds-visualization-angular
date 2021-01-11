@@ -19,6 +19,7 @@ import {
   SdsType,
   SdsTypeCode,
   SdsTypeCodeMap,
+  SdsNamespace,
 } from '~/models';
 import { SdsProperty } from '~/models/sds-property';
 import { StreamConfig } from '~/models/stream-config';
@@ -56,7 +57,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   /** Refresh subscription, which should be cleaned up */
   subscription: Subscription;
   /** List of namespaces in the tenant */
-  namespaces: string[] = [];
+  namespaces: { [id: string]: SdsNamespace } = {};
   /** List of supported types in the namespace */
   types: SdsType[] = [];
   /** List of supported streams in the namespace */
@@ -94,7 +95,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   /** Set up the component when Angular is ready */
   ngOnInit(): void {
     this.sds.getNamespaces().subscribe((r) => {
-      this.namespaces = r;
+      this.namespaces = r.reduce((e: { [id: string]: SdsNamespace }, n) => {
+        e[n.Id] = n;
+        return e;
+      }, {});
     });
     this.namespaceCtrl.valueChanges
       .pipe(debounceTime(this.debounce))
@@ -125,10 +129,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /** Handles changes to namespace control, queries for supported types and streams */
   namespaceChanges(namespace: string): void {
-    this.sds.getTypes(namespace).subscribe((r) => {
-      this.types = r.filter((t) => this.isTypeSupported(t));
-      this.queryStreams(namespace, this.streamCtrl.value);
-    });
+    if (this.namespaces[namespace]) {
+      this.sds.getTypes(this.namespaces[namespace]).subscribe((r) => {
+        this.types = r.filter((t) => this.isTypeSupported(t));
+        this.queryStreams(namespace, this.streamCtrl.value);
+      });
+    }
   }
 
   /** Handles changes to refresh control, sets up new refresh interval timer */
@@ -158,8 +164,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /** Query for streams in a namespace and filter for streams with supported type */
   queryStreams(namespace: string, query: string): void {
-    if (this.namespaces.indexOf(namespace) !== -1) {
-      this.sds.getStreams(namespace, query).subscribe((r) => {
+    if (this.namespaces[namespace]) {
+      this.sds.getStreams(this.namespaces[namespace], query).subscribe((r) => {
         this.streams = r.filter((s) =>
           this.types.some((t) => s.TypeId === t.Id)
         );
@@ -176,7 +182,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // This should either initialize isTime or not change its value
     this.isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
     const config: StreamConfig = {
-      namespace: this.namespaceCtrl.value,
+      namespace: this.namespaces[this.namespaceCtrl.value],
       stream: stream.Id,
       key: key.Id,
       valueFields: type.Properties.filter(

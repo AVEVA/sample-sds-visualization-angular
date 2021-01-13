@@ -1,3 +1,8 @@
+/**
+ * SDS Type Code enumeration, see
+ * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#sdstypecode|OCS Documentation} and
+ * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Types/SdsTypeCode_1-0.html|EDS Documentation}
+ */
 export enum SdsTypeCode {
   Object = 1,
   Int16 = 7,

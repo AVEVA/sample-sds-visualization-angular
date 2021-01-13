@@ -21,7 +21,7 @@ import {
   SdsTypeCodeMap,
   SdsNamespace,
 } from '~/models';
-import { SdsProperty } from '~/models/sds-property';
+import { SdsTypeProperty } from '~/models/sds-property';
 import { StreamConfig } from '~/models/stream-config';
 import { SdsService } from '~/services';
 
@@ -120,14 +120,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subscription?.unsubscribe();
   }
 
-  /** Sets up a new refresh interval timer and cleans up old subscription */
-  setupRefresh(int: Observable<number>): void {
+  /**
+   * Sets up a new refresh interval timer and cleans up old subscription
+   * @param refresh The new interval Observable to use
+   */
+  setupRefresh(refresh: Observable<number>): void {
     this.subscription?.unsubscribe();
-    this.refresh$ = int;
+    this.refresh$ = refresh;
     this.subscription = this.refresh$.subscribe(() => this.updateData());
   }
 
-  /** Handles changes to namespace control, queries for supported types and streams */
+  /**
+   * Handles changes to namespace control, queries for supported types and streams
+   * @param namespace Unvalidated namespace form control value
+   */
   namespaceChanges(namespace: string): void {
     if (this.namespaces[namespace]) {
       this.sds.getTypes(this.namespaces[namespace]).subscribe((r) => {
@@ -137,7 +143,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Handles changes to refresh control, sets up new refresh interval timer */
+  /**
+   * Handles changes to refresh control, sets up new refresh interval timer
+   * @param refresh Unvalidated refresh form control value
+   */
   refreshChanges(refresh: string): void {
     const num = Number(refresh);
     if (!isNaN(num)) {
@@ -145,7 +154,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Whether the passed type is supported, must be an object with valid index */
+  /**
+   * Whether the passed type is supported, must be an object with valid index
+   * @param type SdsType to check compatibility against
+   */
   isTypeSupported(type: SdsType): boolean {
     return (
       type.SdsTypeCode === SdsTypeCode.Object &&
@@ -153,16 +165,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
-  /** Whether the passed property is a supported index, must be order 0 and supported SdsTypeCode */
-  isPropertyKey(prop: SdsProperty): boolean {
+  /**
+   * Whether the passed property is a supported index, must be order 0 and supported SdsTypeCode
+   * @param property SdsProperty to check compatibility against as a key
+   */
+  isPropertyKey(property: SdsTypeProperty): boolean {
     return (
-      prop.IsKey &&
-      (prop.Order || 0) === 0 &&
-      SdsTypeCodeMap[prop.SdsType.SdsTypeCode] > 0
+      property.IsKey &&
+      (property.Order || 0) === 0 &&
+      SdsTypeCodeMap[property.SdsType.SdsTypeCode] > 0
     );
   }
 
-  /** Query for streams in a namespace and filter for streams with supported type */
+  /**
+   * Query for streams in a namespace and filter for streams with supported type
+   * @param namespace Unvalidated namespace form control value
+   * @param query Unvalidated stream form control value, used as query
+   */
   queryStreams(namespace: string, query: string): void {
     if (this.namespaces[namespace]) {
       this.sds.getStreams(this.namespaces[namespace], query).subscribe((r) => {
@@ -173,9 +192,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Add a stream to the chart */
+  /** Add a stream to the chart from current form control values */
   addStream(): void {
-    // console.log(this.streamCtrl.value);
     const stream = this.streams.find((s) => s.Id === this.streamCtrl.value);
     const type = this.types.find((t) => t.Id === stream.TypeId);
     const key = type.Properties.find((p) => this.isPropertyKey(p));
@@ -274,7 +292,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Applies latest data for fields of a specific stream to the chart */
+  /**
+   * Applies latest data for fields of a specific stream to the chart
+   * @param datasets Object with keys matching dataset labels and value array of ChartPoint
+   */
   updateChart(datasets: { [key: string]: Chart.ChartPoint[] }): void {
     this.chart.data.datasets.forEach((d) => {
       if (datasets[d.label]) {

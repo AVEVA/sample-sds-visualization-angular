@@ -1,5 +1,6 @@
 import { SdsNamespace } from './sds-namespace';
 
+/** A stream configuration for the chart */
 export interface StreamConfig {
   namespace: SdsNamespace;
   stream: string;

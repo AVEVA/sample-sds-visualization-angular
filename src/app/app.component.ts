@@ -18,9 +18,13 @@ export class AppComponent implements OnInit {
     @Inject(SETTINGS) public settings: AppSettings
   ) {}
 
+  /** Set up the component when Angular is ready */
   ngOnInit(): void {
+    /** If TenantId is 'default' then this is EDS, do not check for authentication */
     if (this.settings.TenantId !== DEFAULT) {
+      /** Check authentication status of the OidcSecurity Service */
       this.oidcSecurityService.checkAuth().subscribe((isAuthenticated) => {
+        /** If the user is not authenticated against OCS and has not already been redirected to autologin, navigate to autologin */
         if (!isAuthenticated && window.location.pathname !== '/autologin') {
           this.router.navigate(['/autologin']);
         }

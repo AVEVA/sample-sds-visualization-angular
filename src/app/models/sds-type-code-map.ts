@@ -1,6 +1,7 @@
 import { DisplayType } from './display-type';
 import { SdsTypeCode } from './sds-type-code';
 
+/** These SDS Type Codes are supported by the application */
 export const SdsTypeCodeMap = {
   [SdsTypeCode.Object]: DisplayType.None,
   [SdsTypeCode.Int16]: DisplayType.Number,

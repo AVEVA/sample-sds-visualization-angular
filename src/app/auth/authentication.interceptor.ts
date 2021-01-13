@@ -12,6 +12,11 @@ import { Observable } from 'rxjs';
 export class AuthInterceptor implements HttpInterceptor {
   constructor(public oidcSecurityService: OidcSecurityService) {}
 
+  /**
+   * Intercepts HTTP requests and adds the Authorization header with bearer token from the OIDC security service
+   * @param request HTTP request that has been initiated
+   * @param next HTTP handler for this request
+   */
   intercept(
     request: HttpRequest<any>,
     next: HttpHandler

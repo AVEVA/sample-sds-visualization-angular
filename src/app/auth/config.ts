@@ -2,6 +2,7 @@ import { LogLevel, OidcConfigService } from 'angular-auth-oidc-client';
 
 import { AppSettings, DEFAULT } from '~/models';
 
+/** Configures the OidcConfigService for the Oidc server of OSIsoft Cloud Services */
 export function configureAuth(
   oidcConfigService: OidcConfigService,
   settings: AppSettings

@@ -1,10 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  Router,
-  RouterStateSnapshot,
-} from '@angular/router';
+import { CanActivate } from '@angular/router';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Observable, of } from 'rxjs';
 
@@ -17,10 +12,8 @@ export class AuthorizationGuard implements CanActivate {
     @Inject(SETTINGS) public settings: AppSettings
   ) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean> {
+  /** Determines whether the user is authenticated, or data source is EDS and user does not need to be authenticated */
+  canActivate(): Observable<boolean> {
     if (this.settings.TenantId !== DEFAULT) {
       return this.oidcSecurityService.isAuthenticated$;
     }

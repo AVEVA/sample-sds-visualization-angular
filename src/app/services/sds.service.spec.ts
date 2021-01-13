@@ -46,7 +46,7 @@ describe('SdsService', () => {
 
   describe('edsNamespace', () => {
     it('should create a namespace object for EDS', () => {
-      const id = 'id';
+      const id = 'diagnostics';
       const result = service.edsNamespace(id);
       expect(result.Id).toEqual(id);
       expect(result.Self).toEqual(
@@ -73,7 +73,7 @@ describe('SdsService', () => {
     it('should get namespaces from SDS', () => {
       let result: SdsNamespace[];
       service.getNamespaces().subscribe((r) => (result = r));
-      const ns = service.edsNamespace('test');
+      const ns = service.edsNamespace('diagnostics');
       http.expectOne(service.baseUrl).flush([ns]);
       expect(result).toEqual([ns]);
     });

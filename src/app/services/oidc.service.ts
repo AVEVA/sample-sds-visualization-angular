@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { User, UserManager, WebStorageStateStore } from 'oidc-client';
+import { User, UserManager } from 'oidc-client';
 import { from, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -24,32 +24,38 @@ export class OidcService {
     });
   }
 
+  /** Start the login process */
   login(): void {
     this.mgr.signinRedirect();
   }
 
+  /** Start the logout process */
   logout(): void {
     this.mgr.signoutRedirect();
   }
 
+  /** Handle an OIDC redirect callback, and set auth headers */
   signinRedirectCallback(): Observable<User> {
     return from(this.mgr.signinRedirectCallback()).pipe(
       tap((user) => this.setAuthHeaders(user))
     );
   }
 
+  /** Handle an OIDC silent redirect callback, and set auth headers */
   signinSilentCallback(): Observable<User> {
     return from(this.mgr.signinSilentCallback()).pipe(
       tap((user) => this.setAuthHeaders(user))
     );
   }
 
+  /** Get the already logged in user, and set auth headers */
   getUser(): Observable<User> {
     return from(this.mgr.getUser()).pipe(
       tap((user) => this.setAuthHeaders(user))
     );
   }
 
+  /** Check whether there is a valid logged in user */
   checkAuth(): Observable<boolean> {
     return this.getUser().pipe(
       map((user) => user != null && !user.expired),
@@ -57,6 +63,7 @@ export class OidcService {
     );
   }
 
+  /** Set auth headers for use with http requests */
   setAuthHeaders(user: User): void {
     this.authHeaders = user && {
       Authorization: `${user.token_type} ${user.access_token}`,

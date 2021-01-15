@@ -21,7 +21,6 @@ export class OidcService {
       acr_values: `tenant:${settings.TenantId}`,
       silent_redirect_uri: window.location.origin,
       automaticSilentRenew: true,
-      userStore: new WebStorageStateStore({ store: window.localStorage }),
     });
   }
 
@@ -40,7 +39,9 @@ export class OidcService {
   }
 
   signinSilentCallback(): Observable<User> {
-    return from(this.mgr.signinSilentCallback());
+    return from(this.mgr.signinSilentCallback()).pipe(
+      tap((user) => this.setAuthHeaders(user))
+    );
   }
 
   getUser(): Observable<User> {
@@ -51,7 +52,7 @@ export class OidcService {
 
   checkAuth(): Observable<boolean> {
     return this.getUser().pipe(
-      map((user) => user != null),
+      map((user) => user != null && !user.expired),
       catchError(() => of(false))
     );
   }

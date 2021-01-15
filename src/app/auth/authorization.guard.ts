@@ -8,6 +8,10 @@ import { OidcService } from '~/services';
 
 @Injectable({ providedIn: 'root' })
 export class AuthorizationGuard implements CanActivate {
+  get frameElement(): Element {
+    return window.frameElement;
+  }
+
   constructor(
     @Inject(SETTINGS) public settings: AppSettings,
     public router: Router,
@@ -26,7 +30,7 @@ export class AuthorizationGuard implements CanActivate {
           } else {
             // OIDC service is not authenticated yet; check for callback
             // If window is in a frame, this means we should use silent callback, otherwise use redirect callback
-            const signinCallback = window.frameElement
+            const signinCallback = this.frameElement
               ? this.oidc.signinSilentCallback()
               : this.oidc.signinRedirectCallback();
             return signinCallback.pipe(

@@ -187,6 +187,27 @@ describe('HomeComponent', () => {
     }));
   });
 
+  describe('ngOnDestroy', () => {
+    it('should handle null subscription', () => {
+      let err: any;
+      component.subscription = null;
+      try {
+        component.ngOnDestroy();
+      } catch (e) {
+        err = e;
+      }
+      expect(err).toBeUndefined();
+    });
+
+    it('should unsubscribe from refresh subscription', () => {
+      const sub: any = { unsubscribe: () => {} };
+      spyOn(sub, 'unsubscribe');
+      component.subscription = sub;
+      component.ngOnDestroy();
+      expect(sub.unsubscribe).toHaveBeenCalled();
+    });
+  });
+
   describe('setupRefresh', () => {
     it('should set up a new refresh interval', () => {
       const sub = component.subscription;

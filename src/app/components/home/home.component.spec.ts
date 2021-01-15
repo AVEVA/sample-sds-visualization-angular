@@ -96,7 +96,7 @@ describe('HomeComponent', () => {
   };
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [
         NoopAnimationsModule,
         HttpClientTestingModule,
@@ -108,14 +108,15 @@ describe('HomeComponent', () => {
       ],
       providers: [SdsService, { provide: SETTINGS, useValue: settings }],
       declarations: [HomeComponent],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(HomeComponent);
-        component = fixture.componentInstance;
-        component.debounce = 0;
-        sds = TestBed.inject(SdsService);
-      });
+    }).compileComponents();
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(HomeComponent);
+    component = fixture.componentInstance;
+    component.debounce = 0;
+    sds = TestBed.inject(SdsService);
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -162,7 +163,7 @@ describe('HomeComponent', () => {
   describe('ngOnInit', () => {
     it('should get list of namespaces', () => {
       spyOn(sds, 'getNamespaces').and.returnValue(of([namespace]));
-      fixture.detectChanges();
+      component.ngOnInit();
       expect(component.namespaces).toEqual({ [namespace.Id]: namespace });
     });
 
@@ -172,7 +173,7 @@ describe('HomeComponent', () => {
       spyOn(component, 'updateData');
       spyOn(component, 'refreshChanges');
       spyOn(component, 'setupRefresh');
-      fixture.detectChanges();
+      component.ngOnInit();
       component.namespaceCtrl.setValue('');
       component.streamCtrl.setValue('');
       component.eventsCtrl.setValue(100);
@@ -188,7 +189,6 @@ describe('HomeComponent', () => {
 
   describe('setupRefresh', () => {
     it('should set up a new refresh interval', () => {
-      fixture.detectChanges();
       const sub = component.subscription;
       spyOn(sub, 'unsubscribe');
       spyOn(component, 'updateData');
@@ -225,17 +225,14 @@ describe('HomeComponent', () => {
   });
 
   describe('refreshChanges', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-      spyOn(component.subscription, 'unsubscribe');
-    });
-
     it('should do nothing for invalid numbers', () => {
+      spyOn(component.subscription, 'unsubscribe');
       component.refreshChanges('test');
       expect(component.subscription.unsubscribe).not.toHaveBeenCalled();
     });
 
     it('should set up new refresh and subscription', () => {
+      spyOn(component.subscription, 'unsubscribe');
       spyOn(component, 'setupRefresh');
       component.refreshChanges('1');
       expect(component.setupRefresh).toHaveBeenCalled();
@@ -396,7 +393,6 @@ describe('HomeComponent', () => {
     it('should add a stream to the chart', () => {
       spyOn(component, 'updateData');
       spyOn(component.streamCtrl, 'setValue').and.callThrough();
-      fixture.detectChanges();
       const chart = { update: () => {}, data: { datasets: [] } } as any;
       spyOn(chart, 'update');
       spyOn(component, 'getChart').and.returnValue(chart);
@@ -433,13 +429,11 @@ describe('HomeComponent', () => {
 
   describe('getChart', () => {
     it('should create a time series chart', () => {
-      fixture.detectChanges();
       component.isTime = true;
       expect(component.getChart().options.scales.xAxes[0].type).toEqual('time');
     });
 
     it('should create a linear chart', () => {
-      fixture.detectChanges();
       expect(component.getChart().options.scales.xAxes[0].type).toEqual(
         'linear'
       );
@@ -464,7 +458,6 @@ describe('HomeComponent', () => {
     const data: any[] = [{ ['key']: 'last', ['value']: 'value' }];
 
     beforeEach(() => {
-      fixture.detectChanges();
       spyOn(sds, 'getLastValue').and.returnValue(of(last));
       spyOn(component, 'updateChart');
       component.configs = [{ ...config }];

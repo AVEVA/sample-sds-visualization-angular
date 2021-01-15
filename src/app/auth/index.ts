@@ -1,2 +1,2 @@
 export * from './authentication.interceptor';
-export * from './config';
+export * from './authorization.guard';

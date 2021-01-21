@@ -1,27 +1,65 @@
-# SampleSdsVisualizationAngular
+# Sequential Data Store Angular Visualization Sample
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.5.
+**Version:** 1.0.0
 
-## Development server
+[![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/osisoft.sample-sds-visualization-angular?repoName=osisoft%2Fsample-sds-visualization-angular&branchName=master)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&repoName=osisoft%2Fsample-sds-visualization-angular&branchName=master)
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+**WARNING:** The web server used in this sample is intended for use in testing or debugging sample applications locally. It has not been reviewed for security issues.
 
-## Code scaffolding
+## Prerequisites
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- [NodeJS and NPM](https://nodejs.org/en/)
+- [Angular CLI](https://cli.angular.io/) (`npm install -g @angular/cli`)
+- A modern, evergreen browser, such as the latest version of [Google Chrome](https://www.google.com/chrome/), [Mozilla Firefox](https://www.mozilla.org/firefox/), or [Microsoft Edge](https://www.microsoft.com/edge)
 
-## Build
+This application will use local port 4200 by default.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+**Note: This sample application is hosted on HTTP. This is not secure. You should use a certificate and HTTPS.**
 
-## Running unit tests
+This sample was developed using Node version 12.16.1.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Configuring the sample
 
-## Running end-to-end tests
+Before running the sample, you must first configure the `appsettings.json` file. The [appsettings.placeholder.json](src/app/appsettings.placeholder.json) file should be renamed to `appsettings.json`, and configured. This repository's `.gitignore` rules should prevent this file from ever being checked in to any fork or branch, to ensure sensitive information is not compromised.
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+Next, complete the configuration file for one of the following.
 
-## Further help
+### OSIsoft Cloud Services
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Before configuring the sample for OCS, you must first create an Authorization Code Client for use with the sample. This Authorization Code Client must contain `http://localhost:4200` in the list of RedirectUris.
+
+- `Resource`: This can usually be left as the default of `https://dat-b.osisoft.com`. This URL is only used for authentication and querying the list of namespaces; if a namespace is in another region the application will use the URL of the namespace.
+- `TenantId`: If you are unsure what GUID to use, this is part of the Full Path in the API Console of OSIsoft Cloud Services, like `Tenants/{TenantId}/Namespaces`.
+- `ApiVersion`: This should usually be left as the default of `v1`.
+- `ClientId`: The ID of the Authorization Code Client that was created for this sample.
+
+### Edge Data Store
+
+Note that this sample is able to connect to a local Edge Data Store only; connections to remote Edge Data Store instances are not possible.
+
+- `Resource`: By default, this should be `http://localhost:5590`, although the port number should match the port number that is used by Edge Data Store.
+- `TenantId`: This must be set to `default`.
+- `ApiVersion`: This should be left as the default, `v1`.
+- `ClientId`: This field is not used when connecting to EDS.
+
+## Running the sample
+
+1. Open a command line in the project folder
+1. Install dependencies, using `npm ci`
+1. Run the sample, using `npm start`
+1. Open a browser, and navigate to `http://localhost:4200`
+1. Choose a namespace, then choose a stream, then click 'Add'
+1. If desired, choose a number of events and a refresh rate
+1. The latest x number of events will be graphed in the chart
+
+## Running the tests
+
+1. Open a command line in the project folder
+1. Install dependencies, using `npm ci`
+1. Run the tests, using `npm test` (To run the tests only once, use `npm test -- --watch-false`)
+1. The tests will report the amount of code coverage in the `coverage` folder and log results to the `results` folder
+
+---
+
+For the main OCS page [ReadMe](https://github.com/osisoft/OSI-Samples-OCS)  
+For the main samples page on master [ReadMe](https://github.com/osisoft/OSI-Samples)

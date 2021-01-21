@@ -1,0 +1,23 @@
+:host {
+  > * + * {
+    margin-top: 1rem;
+  }
+}
+
+form {
+  width: 100%;
+  display: flex;
+  height: 2.5rem;
+
+  > mat-form-field {
+    flex-grow: 1;
+  }
+
+  > * + * {
+    margin-left: 1rem;
+  }
+}
+
+table {
+  width: 100%;
+}

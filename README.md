@@ -38,7 +38,7 @@ Before configuring the sample for OCS, you must first create an Authorization Co
 Note that this sample is able to connect to a local Edge Data Store only; connections to remote Edge Data Store instances are not possible.
 
 - `Resource`: By default, this should be `http://localhost:5590`, although the port number should match the port number that is used by Edge Data Store.
-- `TenantId`: This should be set to `default`.
+- `TenantId`: This must be set to `default`.
 - `ApiVersion`: This should be left as the default, `v1`.
 - `ClientId`: This field is not used when connecting to EDS.
 

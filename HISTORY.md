@@ -1,6 +1,6 @@
 # Version History
 
-## 1.0.1 / 2021-01-27
+## 1.0.1 / 2021-02-09
 
 - Updated Dependencies
 

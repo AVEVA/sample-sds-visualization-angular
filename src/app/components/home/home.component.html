@@ -44,7 +44,7 @@
   <table mat-table [dataSource]="configs" class="mat-elevation-z8">
     <ng-container matColumnDef="namespace">
       <th mat-header-cell *matHeaderCellDef>Namespace</th>
-      <td mat-cell *matCellDef="let config">{{ config.namespace }}</td>
+      <td mat-cell *matCellDef="let config">{{ config.namespace.Id }}</td>
     </ng-container>
 
     <ng-container matColumnDef="stream">

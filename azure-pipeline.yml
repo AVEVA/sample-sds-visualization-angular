@@ -35,9 +35,8 @@ jobs:
   - job: Tests
     pool:
       name: 00-OSIManaged-Containers
-      demands: Agent.OS -equals Windows_NT
     steps:
-      - bash: npm ci
+      - script: npm ci
         workingDirectory: $(Build.SourcesDirectory)$(projPath)
         displayName: 'Install dependencies'
 

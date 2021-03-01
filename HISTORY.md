@@ -1,12 +1,13 @@
 # Version History
 
-## 1.0.2 / 2021-02-18
+## 1.0.2 / 2021-03-01
 
-- Fix minor UI issue
+- Fixed minor UI issue
+- Updated pipeline to use internal agent pool
 
 ## 1.0.1 / 2021-02-09
 
-- Updated Dependencies
+- Updated dependencies
 
 ## 1.0.0 / 2021-01-21
 

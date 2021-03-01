@@ -34,32 +34,12 @@ variables:
 jobs:
   - job: Tests
     pool:
-      vmImage: windows-latest
+      name: 00-OSIManaged-Containers
+      demands: Agent.OS -equals Windows_NT
     steps:
-      # # Issue in windows-latest template, see:
-      # # https://developercommunity.visualstudio.com/content/problem/1170486/selenium-ui-test-can-no-longer-find-chrome-binary.html
-      # - script: |
-      #     if not exist "C:\Program Files (x86)\Google" mkdir "C:\Program Files (x86)\Google"
-      #     if not exist "C:\Program Files (x86)\Google\Chrome" mkdir "C:\Program Files (x86)\Google\Chrome"
-      #     mklink /D "C:\Program Files (x86)\Google\Chrome\Application" "C:\Program Files\Google\Chrome\Application"
-      #   displayName: Set Chrome Path
-      #   condition: eq(variables['imageName'],'windows-latest')
-
       - bash: npm ci
         workingDirectory: $(Build.SourcesDirectory)$(projPath)
         displayName: 'Install dependencies'
-
-      # # Currently same version on Windows & Ubuntu, preserving separate
-      # # conditionals in case these images go out of sync in the future
-      # - bash: npx webdriver-manager update --versions.chrome 87.0.4280.88
-      #   workingDirectory: $(Build.SourcesDirectory)$(projPath)
-      #   displayName: 'Ubuntu: Update webdriver-manager'
-      #   condition: eq(variables['imageName'],'ubuntu-latest')
-
-      # - bash: npx webdriver-manager update --versions.chrome 87.0.4280.88
-      #   workingDirectory: $(Build.SourcesDirectory)$(projPath)
-      #   displayName: 'Update webdriver-manager'
-      #   condition: eq(variables['imageName'],'windows-latest')
 
       - script: npm run test -- --watch=false
         workingDirectory: $(Build.SourcesDirectory)$(projPath)/

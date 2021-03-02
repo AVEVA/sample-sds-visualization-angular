@@ -2,19 +2,19 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+      - main
 
 pr:
   branches:
     include:
-      - master
+      - main
 
 schedules:
   - cron: '0 0 * * 0'
     displayName: Weekly build
     branches:
       include:
-        - master
+        - main
     always: true
 
 resources:

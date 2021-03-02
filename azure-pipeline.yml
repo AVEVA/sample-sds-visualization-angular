@@ -27,8 +27,6 @@ resources:
 
 variables:
   - template: '/miscellaneous/build_templates/variables.yml@templates'
-  - name: projPath
-    value: '/'
   - name: analysisProject
     value: SDS_Viz_Angular
 
@@ -39,11 +37,9 @@ jobs:
       demands: Agent.OS -equals Windows_NT
     steps:
       - script: npm ci
-        workingDirectory: $(Build.SourcesDirectory)$(projPath)
         displayName: 'Install dependencies'
 
       - script: npm run test -- --watch=false
-        workingDirectory: $(Build.SourcesDirectory)$(projPath)/
         displayName: 'Run tests'
 
       - task: PublishTestResults@2
@@ -51,7 +47,7 @@ jobs:
           testResultsFormat: JUnit
           testResultsFiles: '*.xml'
           failTaskOnFailedTests: true
-          searchFolder: '$(Build.SourcesDirectory)$(projPath)/results'
+          searchFolder: '$(Build.SourcesDirectory)/results'
           testRunTitle: '$(Agent.JobName) on $(imageName)'
         displayName: 'Publish test results'
         condition: always()

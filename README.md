@@ -1,8 +1,8 @@
 # Sequential Data Store Angular Visualization Sample
 
-**Version:** 1.0.1
+**Version:** 1.0.2
 
-[![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/osisoft.sample-sds-visualization-angular?repoName=osisoft%2Fsample-sds-visualization-angular&branchName=master)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&repoName=osisoft%2Fsample-sds-visualization-angular&branchName=master)
+[![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/osisoft.sample-sds-visualization-angular?repoName=osisoft%2Fsample-sds-visualization-angular&branchName=main)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&repoName=osisoft%2Fsample-sds-visualization-angular&branchName=main)
 
 **WARNING:** The web server used in this sample is intended for use in testing or debugging sample applications locally. It has not been reviewed for security issues.
 
@@ -62,4 +62,4 @@ Note that this sample is able to connect to a local Edge Data Store only; connec
 ---
 
 For the main OCS page [ReadMe](https://github.com/osisoft/OSI-Samples-OCS)  
-For the main samples page on master [ReadMe](https://github.com/osisoft/OSI-Samples)
+For the main samples page [ReadMe](https://github.com/osisoft/OSI-Samples)

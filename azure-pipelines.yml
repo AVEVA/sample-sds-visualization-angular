@@ -57,7 +57,7 @@ jobs:
       demands: Agent.OS -equals Windows_NT
     steps:
       - powershell: Rename-Item -Path appsettings.placeholder.json -NewName appsettings.json
-        workingDirectory: /src/app
+        workingDirectory: $(Build.SourcesDirectory)/src/app
         displayName: 'Rename placeholder config file'
 
       - script: npm ci

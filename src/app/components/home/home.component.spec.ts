@@ -451,13 +451,11 @@ describe('HomeComponent', () => {
   describe('getChart', () => {
     it('should create a time series chart', () => {
       component.isTime = true;
-      expect(component.getChart().options.scales.xAxes[0].type).toEqual('time');
+      expect(component.getChart().options.scales.x.type).toEqual('time');
     });
 
     it('should create a linear chart', () => {
-      expect(component.getChart().options.scales.xAxes[0].type).toEqual(
-        'linear'
-      );
+      expect(component.getChart().options.scales.x.type).toEqual('linear');
     });
   });
 

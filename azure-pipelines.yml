@@ -56,6 +56,10 @@ jobs:
       name: 00-OSIManaged-Containers
       demands: Agent.OS -equals Windows_NT
     steps:
+      - powershell: Rename-Item -Path appsettings.placeholder.json -NewName appsettings.json
+        workingDirectory: /src/app
+        displayName: 'Rename placeholder config file'
+
       - script: npm ci
         displayName: 'Install dependencies'
 

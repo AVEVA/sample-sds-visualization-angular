@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTable } from '@angular/material/table';
-import { Chart } from 'chart.js';
+import { Chart, ScatterDataPoint } from 'chart.js';
 import { interval, Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
@@ -238,18 +238,14 @@ export class HomeComponent implements OnInit, OnDestroy {
       options: {
         responsive: false,
         scales: {
-          xAxes: [
-            {
-              type: this.isTime ? 'time' : 'linear',
-              position: 'bottom',
-            },
-          ],
-          yAxes: [
-            {
-              type: 'linear',
-              position: 'left',
-            },
-          ],
+          x: {
+            type: this.isTime ? 'time' : 'linear',
+            position: 'bottom',
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+          },
         },
       },
     });
@@ -271,7 +267,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           )
           .subscribe((data: any[]) => {
             if (data?.length > 0) {
-              const datasets: { [key: string]: Chart.ChartPoint[] } = {};
+              const datasets: { [key: string]: ScatterDataPoint[] } = {};
               for (const f of s.valueFields) {
                 datasets[`${s.stream}.${f}`] = [];
               }
@@ -296,7 +292,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * Applies latest data for fields of a specific stream to the chart
    * @param datasets Object with keys matching dataset labels and value array of ChartPoint
    */
-  updateChart(datasets: { [key: string]: Chart.ChartPoint[] }): void {
+  updateChart(datasets: { [key: string]: ScatterDataPoint[] }): void {
     this.chart.data.datasets.forEach((d) => {
       if (datasets[d.label]) {
         d.data = datasets[d.label];

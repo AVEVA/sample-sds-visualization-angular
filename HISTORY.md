@@ -1,5 +1,9 @@
 # Version History
 
+## 1.0.3 / 2021-05-21
+
+- Updated dependencies
+
 ## 1.0.2 / 2021-03-02
 
 - Fixed minor UI issue

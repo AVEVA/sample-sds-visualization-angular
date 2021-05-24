@@ -8,7 +8,8 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTable } from '@angular/material/table';
-import { Chart, ScatterDataPoint } from 'chart.js';
+import { Chart, registerables, ScatterDataPoint } from 'chart.js';
+import 'chartjs-adapter-date-fns';
 import { interval, Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
@@ -24,6 +25,8 @@ import {
 import { SdsTypeProperty } from '~/models/sds-property';
 import { StreamConfig } from '~/models/stream-config';
 import { SdsService } from '~/services';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-home-component',

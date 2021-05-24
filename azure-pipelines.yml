@@ -51,4 +51,19 @@ jobs:
         displayName: 'Publish test results'
         condition: always()
 
+  - job: Analysis
+    pool:
+      name: 00-OSIManaged-Containers
+      demands: Agent.OS -equals Windows_NT
+    steps:
+      - powershell: Rename-Item -Path appsettings.placeholder.json -NewName appsettings.json
+        workingDirectory: $(Build.SourcesDirectory)/src/app
+        displayName: 'Rename placeholder config file'
+
+      - script: npm ci
+        displayName: 'Install dependencies'
+
+      - script: npm run build
+        displayName: 'Build'
+
       - template: '/miscellaneous/build_templates/analysis.yml@templates'

@@ -1,6 +1,6 @@
 # Sequential Data Store Angular Visualization Sample
 
-**Version:** 1.0.3
+**Version:** 1.0.4
 
 [![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/osisoft.sample-sds-visualization-angular?repoName=osisoft%2Fsample-sds-visualization-angular&branchName=main)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&repoName=osisoft%2Fsample-sds-visualization-angular&branchName=main)
 

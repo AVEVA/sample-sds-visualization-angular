@@ -172,7 +172,7 @@ describe('SdsService', () => {
         'An error occurred:',
         'ErrorMessage'
       );
-      expect(result._subscribe).toBeTruthy();
+      expect(result.subscribe).toBeTruthy();
     });
 
     it('should handle Http Error', () => {
@@ -183,7 +183,7 @@ describe('SdsService', () => {
       expect(console.error).toHaveBeenCalledWith(
         'SDS backend returned code 400, body was: HttpError'
       );
-      expect(result._subscribe).toBeTruthy();
+      expect(result.subscribe).toBeTruthy();
     });
   });
 });

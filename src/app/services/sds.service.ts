@@ -40,9 +40,9 @@ export class SdsService {
   }
 
   /**
-   * Gets hard-coded namespaces from EDS, or makes an HTTP request for list of namespaces from OCS, see
+   * Gets hard-coded namespaces from EDS, or makes an HTTP request for list of namespaces from ADH, see
    * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/Management/Account_Namespace_1.html#get-all-namespaces
-   * |OCS Documentation}
+   * |ADH Documentation}
    */
   getNamespaces(): Observable<SdsNamespace[]> {
     if (this.settings.TenantId === DEFAULT) {
@@ -57,7 +57,7 @@ export class SdsService {
 
   /**
    * Makes a request for types in a specified namespace, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#get-types|OCS Documentation} and
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#get-types|ADH Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Types/SDSType_API_1-0.html#get-types|EDS Documentation}
    * @param namespace The namespace ID to query types against
    */
@@ -70,7 +70,7 @@ export class SdsService {
 
   /**
    * Makes a request for streams in a specified namespace matching a search pattern, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html#get-streams|OCS Documentation}
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html#get-streams|ADH Documentation}
    * and {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Streams/Sds_Streams_API_1-0.html#get-streams| EDS Documentation}
    * @param namespace The namespace ID to query streams against
    * @param query The string search for streams
@@ -87,7 +87,7 @@ export class SdsService {
   /**
    * Makes a request for the latest value from a stream in a specified namespace, see
    * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#get-last-value
-   * |OCS Documentation} and
+   * |ADH Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Read%20data/Reading_Data_API_1-0.html#get-last-value|EDS Documentation}
    * @param namespace The namespace ID of the specified stream
    * @param stream The stream ID to query last value against
@@ -100,7 +100,7 @@ export class SdsService {
 
   /**
    * Makes a request for a range of values from a stream in a specified namespace, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#range|OCS Documentation} and
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#range|ADH Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Read%20data/Reading_Data_API_1-0.html#range|EDS Documentation}
    * @param namespace The namespace ID of the specified stream
    * @param stream The stream ID to query range values against

@@ -1,8 +1,11 @@
 # Sequential Data Store Angular Visualization Sample
 
-**Version:** 1.0.8
+| :loudspeaker: **Notice**: Samples have been updated to reflect that they work on AVEVA Data Hub. The samples also work on OSIsoft Cloud Services unless otherwise noted. |
+| -----------------------------------------------------------------------------------------------|  
 
-[![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/osisoft.sample-sds-visualization-angular?repoName=osisoft%2Fsample-sds-visualization-angular&branchName=main)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&repoName=osisoft%2Fsample-sds-visualization-angular&branchName=main)
+**Version:** 1.0.9
+
+[![Build Status](https://dev.azure.com/osieng/engineering/_apis/build/status/product-readiness/SDS/aveva.sample-sds-visualization-angular?branchName=main)](https://dev.azure.com/osieng/engineering/_build/latest?definitionId=2686&branchName=main)
 
 **WARNING:** The web server used in this sample is intended for use in testing or debugging sample applications locally. It has not been reviewed for security issues.
 
@@ -24,12 +27,12 @@ Before running the sample, you must first configure the `appsettings.json` file.
 
 Next, complete the configuration file for one of the following.
 
-### OSIsoft Cloud Services
+### AVEVA Data Hub
 
-Before configuring the sample for OCS, you must first create an Authorization Code Client for use with the sample. This Authorization Code Client must contain `http://localhost:4200` in the list of RedirectUris.
+Before configuring the sample for ADH, you must first create an Authorization Code Client for use with the sample. This Authorization Code Client must contain `http://localhost:4200` in the list of RedirectUris.
 
-- `Resource`: This can usually be left as the default of `https://dat-b.osisoft.com`. This URL is only used for authentication and querying the list of namespaces; if a namespace is in another region the application will use the URL of the namespace.
-- `TenantId`: If you are unsure what GUID to use, this is part of the Full Path in the API Console of OSIsoft Cloud Services, like `Tenants/{TenantId}/Namespaces`.
+- `Resource`: This can usually be left as the default of `https://uswe.datahub.connect.aveva.com`. This URL is only used for authentication and querying the list of namespaces; if a namespace is in another region the application will use the URL of the namespace.
+- `TenantId`: If you are unsure what GUID to use, this is part of the Full Path in the API Console of AVEVA Data Hub, like `Tenants/{TenantId}/Namespaces`.
 - `ApiVersion`: This should usually be left as the default of `v1`.
 - `ClientId`: The ID of the Authorization Code Client that was created for this sample.
 
@@ -61,5 +64,5 @@ Note that this sample is able to connect to a local Edge Data Store only; connec
 
 ---
 
-For the main OCS page [ReadMe](https://github.com/osisoft/OSI-Samples-OCS)  
+For the main ADH page [ReadMe](https://github.com/osisoft/OSI-Samples-OCS)  
 For the main samples page [ReadMe](https://github.com/osisoft/OSI-Samples)

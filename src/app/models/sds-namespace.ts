@@ -1,6 +1,6 @@
 /**
  * SDS Namespace representation, see
- * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/Management/Account_Namespace_1.html|OCS Documentation},
+ * {@link https://docs.osisoft.com/bundle/data-hub/page/api-reference/tenant/tenant-namespaces.html|ADH Documentation},
  * EDS always contains two namespaces, 'default' and 'diagnostics'
  */
 export interface SdsNamespace {

@@ -1,7 +1,7 @@
 /**
  * SDS Stream representation, see
- * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html|ADH Documentation} and
- * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/SDS_Streams_1-0.html|EDS Documentation}
+ * {@link https://docs.osisoft.com/bundle/data-hub/page/add-organize-data/store-data/streams/streams-concept.html|ADH Documentation} and
+ * {@link https://docs.osisoft.com/bundle/edge-data-store/page/sds/sds-streams.html|EDS Documentation}
  */
 export interface SdsStream {
   Id: string;

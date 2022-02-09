@@ -2,8 +2,8 @@ import { SdsType } from './sds-type';
 
 /**
  * SDS Type Property representation, see
- * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#sdstypeproperty|ADH Documentation}
- * and {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Types/SdsTypeProperty_1-0.html|EDS Documentation}
+ * {@link https://docs.osisoft.com/bundle/data-hub/page/developer-guide/sequential-data-store-dev/sds-types-dev.html#sdstypeproperty|ADH Documentation}
+ * and {@link https://docs.osisoft.com/bundle/edge-data-store/page/sds/types/sds-type-property.html|EDS Documentation}
  */
 export interface SdsTypeProperty {
   Id: string;

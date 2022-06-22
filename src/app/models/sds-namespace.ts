@@ -5,6 +5,7 @@
  */
 export interface SdsNamespace {
   Id: string;
+  Name: string;
   Description: string;
   InstanceId: string;
   Region: string;

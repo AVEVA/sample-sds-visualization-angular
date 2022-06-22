@@ -20,7 +20,7 @@ import {
   SdsType,
   SdsTypeCode,
   SdsTypeCodeMap,
-  SdsNamespace,
+  OrganizationUnit,
 } from '~/models';
 import { SdsTypeProperty } from '~/models/sds-property';
 import { StreamConfig } from '~/models/stream-config';
@@ -59,8 +59,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   refresh$ = interval(5000);
   /** Refresh subscription, which should be cleaned up */
   subscription: Subscription;
-  /** List of namespaces in the tenant */
-  namespaces: { [id: string]: SdsNamespace } = {};
+  /** List of namespaces/communities in the tenant */
+  organizationUnits: OrganizationUnit[] = [];
   /** List of supported types in the namespace */
   types: SdsType[] = [];
   /** List of supported streams in the namespace */
@@ -98,10 +98,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   /** Set up the component when Angular is ready */
   ngOnInit(): void {
     this.sds.getNamespaces().subscribe((r) => {
-      this.namespaces = r.reduce((e: { [id: string]: SdsNamespace }, n) => {
-        e[n.Id] = n;
-        return e;
-      }, {});
+      this.organizationUnits = r;
+    });
+    this.sds.getCommunites().subscribe((r) => {
+      this.organizationUnits = [...this.organizationUnits, ...r];
     });
     this.namespaceCtrl.valueChanges
       .pipe(debounceTime(this.debounce))
@@ -138,11 +138,13 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param namespace Unvalidated namespace form control value
    */
   namespaceChanges(namespace: string): void {
-    if (this.namespaces[namespace]) {
-      this.sds.getTypes(this.namespaces[namespace]).subscribe((r) => {
-        this.types = r.filter((t) => this.isTypeSupported(t));
-        this.queryStreams(namespace, this.streamCtrl.value);
-      });
+    if (this.organizationUnits.find((x) => x.Unit.Name === namespace)) {
+      this.sds
+        .getTypes(this.organizationUnits.find((x) => x.Unit.Name === namespace))
+        .subscribe((r) => {
+          this.types = r.filter((t) => this.isTypeSupported(t));
+          this.queryStreams(namespace, this.streamCtrl.value);
+        });
     }
   }
 
@@ -186,12 +188,17 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param query Unvalidated stream form control value, used as query
    */
   queryStreams(namespace: string, query: string): void {
-    if (this.namespaces[namespace]) {
-      this.sds.getStreams(this.namespaces[namespace], query).subscribe((r) => {
-        this.streams = r.filter((s) =>
-          this.types.some((t) => s.TypeId === t.Id)
-        );
-      });
+    if (this.organizationUnits.find((x) => x.Unit.Name === namespace)) {
+      this.sds
+        .getStreams(
+          this.organizationUnits.find((x) => x.Unit.Name === namespace),
+          query
+        )
+        .subscribe((r) => {
+          this.streams = r.filter((s) =>
+            this.types.some((t) => s.TypeId === t.Id)
+          );
+        });
     }
   }
 
@@ -203,7 +210,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     // This should either initialize isTime or not change its value
     this.isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
     const config: StreamConfig = {
-      namespace: this.namespaces[this.namespaceCtrl.value],
+      unit: this.organizationUnits.find(
+        (x) => x.Unit.Name === this.namespaceCtrl.value
+      ),
       stream: stream.Id,
       key: key.Id,
       valueFields: type.Properties.filter(
@@ -258,16 +267,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   updateData(): void {
     const events = this.eventsCtrl.value;
     for (const s of this.configs) {
-      this.sds.getLastValue(s.namespace, s.stream).subscribe((last) => {
+      this.sds.getLastValue(s.unit, s.stream).subscribe((last) => {
         const startIndex = last[s.key];
         this.sds
-          .getRangeValues(
-            s.namespace,
-            s.stream,
-            startIndex,
-            Number(events),
-            true
-          )
+          .getRangeValues(s.unit, s.stream, startIndex, Number(events), true)
           .subscribe((data: any[]) => {
             if (data?.length > 0) {
               const datasets: { [key: string]: ScatterDataPoint[] } = {};

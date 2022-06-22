@@ -2,17 +2,18 @@
   <mat-form-field>
     <input
       type="text"
-      placeholder="Namespace"
+      placeholder="Namespace/Community"
       matInput
       [formControl]="namespaceCtrl"
       [matAutocomplete]="nsAuto"
     />
     <mat-autocomplete #nsAuto="matAutocomplete">
       <mat-option
-        *ngFor="let namespace of namespaces | keyvalue"
-        [value]="namespace.key"
+        *ngFor="let unit of organizationUnits"
+        [value]="unit.Unit.Name"
       >
-        {{ namespace.key }}
+        <span>{{ unit.Unit.Name }}</span> |
+        <small>{{ unit.Type }}</small>
       </mat-option>
     </mat-autocomplete>
   </mat-form-field>
@@ -43,8 +44,11 @@
 <ng-container *ngIf="configs.length">
   <table mat-table [dataSource]="configs" class="mat-elevation-z8">
     <ng-container matColumnDef="namespace">
-      <th mat-header-cell *matHeaderCellDef>Namespace</th>
-      <td mat-cell *matCellDef="let config">{{ config.namespace.Id }}</td>
+      <th mat-header-cell *matHeaderCellDef>Namespace/Community</th>
+      <td mat-cell *matCellDef="let config">
+        <span>{{ config.unit.Unit.Name }}</span> |
+        <small>{{ config.unit.Type }}</small>
+      </td>
     </ng-container>
 
     <ng-container matColumnDef="stream">

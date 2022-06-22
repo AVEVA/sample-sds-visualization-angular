@@ -1,5 +1,7 @@
 export * from './appsettings';
 export * from './display-type';
+export * from './organization-unit';
+export * from './sds-community';
 export * from './sds-namespace';
 export * from './sds-stream';
 export * from './sds-type';

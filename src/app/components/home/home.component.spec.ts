@@ -233,23 +233,25 @@ describe('HomeComponent', () => {
     });
   });
 
-  describe('namespaceChanges', () => {
+  describe('organizationUnitChanges', () => {
     it('should query types and streams', () => {
+      spyOn(sds, 'getStreams').and.returnValue(of([stream]));
       spyOn(sds, 'getType').and.returnValue(of(supportedType));
       spyOn(component, 'queryStreams');
       component.organizationUnits = [organizationUnit];
-      component.organizationUnitChanges(organizationUnit.Unit.Id);
-      expect(sds.getType).toHaveBeenCalledWith(organizationUnit, stream);
-      expect(component.types).toEqual([supportedType]);
+      component.organizationUnitChanges(organizationUnit.Unit.Name);
       expect(component.queryStreams).toHaveBeenCalledWith(
-        organizationUnit.Unit.Id,
+        organizationUnit.Unit.Name,
         null
       );
+      expect(sds.getStreams).toHaveBeenCalledWith(organizationUnit, null);
+      expect(sds.getType).toHaveBeenCalledWith(organizationUnit, stream);
+      expect(component.types).toEqual([supportedType]);
     });
 
     it('should do nothing if namespace is not recognized', () => {
       spyOn(sds, 'getType').and.returnValue(of(supportedType));
-      component.organizationUnitChanges(organizationUnit.Unit.Id);
+      component.organizationUnitChanges(organizationUnit.Unit.Name);
       expect(sds.getType).not.toHaveBeenCalled();
     });
   });
@@ -402,9 +404,9 @@ describe('HomeComponent', () => {
     });
 
     it('should make call to SDS and filter out streams with unsupported type', () => {
-      spyOn(sds, 'getStreams').and.returnValue(of([null]));
+      spyOn(sds, 'getStreams').and.returnValue(of([]));
       component.organizationUnits = [organizationUnit];
-      component.queryStreams(organizationUnit.Unit.Id, 'q');
+      component.queryStreams(organizationUnit.Unit.Name, 'q');
       expect(sds.getStreams).toHaveBeenCalledWith(organizationUnit, 'q');
       expect(component.streams).toEqual([]);
     });
@@ -413,7 +415,7 @@ describe('HomeComponent', () => {
       spyOn(sds, 'getStreams').and.returnValue(of([stream]));
       component.organizationUnits = [organizationUnit];
       component.types = [supportedType];
-      component.queryStreams(organizationUnit.Unit.Id, 'q');
+      component.queryStreams(organizationUnit.Unit.Name, 'q');
       expect(sds.getStreams).toHaveBeenCalledWith(organizationUnit, 'q');
       expect(component.streams).toEqual([stream]);
     });

@@ -94,9 +94,11 @@ describe('SdsService', () => {
 
     it('should get namespaces from SDS', () => {
       let result: OrganizationUnit[];
-      service.getCommunities().subscribe((r) => (result = r));
+      service.getNamespaces().subscribe((r) => (result = r));
       const ns = service.edsNamespace('diagnostics');
-      http.expectOne(service.baseUrl).flush([ns]);
+      http
+        .expectOne('Resource/api/v1/Tenants/TenantId/Namespaces')
+        .flush([ns.Unit]);
       expect(result).toEqual([ns]);
     });
   });
@@ -109,13 +111,13 @@ describe('SdsService', () => {
     it('should get nothing for EDS', () => {
       settings.TenantId = DEFAULT;
       let result: OrganizationUnit[];
-      service.getNamespaces().subscribe((r) => (result = r));
+      service.getCommunities().subscribe((r) => (result = r));
       expect(result).toEqual([]);
     });
 
     it('should get namespaces from SDS', () => {
       let result: OrganizationUnit[];
-      service.getNamespaces().subscribe((r) => (result = r));
+      service.getCommunities().subscribe((r) => (result = r));
       const ns: OrganizationUnit = {
         Unit: {
           Id: 'CommunityId',
@@ -127,16 +129,22 @@ describe('SdsService', () => {
         },
         Type: OrganizationUnitType.Community,
       };
-      http.expectOne(service.baseUrl).flush([ns]);
+      http
+        .expectOne('Resource/api/v1-preview/Tenants/TenantId/Communities')
+        .flush([ns.Unit]);
       expect(result).toEqual([ns]);
     });
   });
 
-  describe('getTypes', () => {
+  describe('getType', () => {
     it('should get types from SDS', () => {
       let result: SdsType;
       service.getType(organizationUnit, stream).subscribe((r) => (result = r));
-      http.expectOne('Self/Types').flush(type);
+      http
+        .expectOne(
+          'Resource/api/v1-preview/Tenants/TenantId/Namespaces/Id/Streams/Id/Resolved'
+        )
+        .flush({ Type: type });
       expect(result).toEqual(type);
     });
   });
@@ -147,14 +155,22 @@ describe('SdsService', () => {
       service
         .getStreams(organizationUnit, 'Query')
         .subscribe((r) => (result = r));
-      http.expectOne('Self/Streams?query=Query*').flush([stream]);
+      http
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams?query=Query*'
+        )
+        .flush([stream]);
       expect(result).toEqual([stream]);
     });
 
     it('should handle null query', () => {
       let result: SdsStream[];
       service.getStreams(organizationUnit, null).subscribe((r) => (result = r));
-      http.expectOne('Self/Streams?query=*').flush([stream]);
+      http
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams?query=*'
+        )
+        .flush([stream]);
       expect(result).toEqual([stream]);
     });
   });
@@ -166,7 +182,11 @@ describe('SdsService', () => {
       service
         .getLastValue(organizationUnit, stream)
         .subscribe((r) => (result = r));
-      http.expectOne('Self/Streams/Stream/Data/Last').flush(last);
+      http
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams/Id/Data/Last'
+        )
+        .flush(last);
       expect(result).toEqual(last);
     });
   });
@@ -179,7 +199,9 @@ describe('SdsService', () => {
         .getRangeValues(organizationUnit, stream, 'StartIndex', 3)
         .subscribe((r) => (result = r));
       http
-        .expectOne('Self/Streams/Stream/Data?startIndex=StartIndex&count=3')
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams/Id/Data?startIndex=StartIndex&count=3'
+        )
         .flush(data);
       expect(result).toEqual(data);
     });
@@ -192,7 +214,7 @@ describe('SdsService', () => {
         .subscribe((r) => (result = r));
       http
         .expectOne(
-          'Self/Streams/Stream/Data?startIndex=StartIndex&count=3&reversed=true'
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams/Id/Data?startIndex=StartIndex&count=3&reversed=true'
         )
         .flush(data);
       expect(result).toEqual(data);

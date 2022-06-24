@@ -8,4 +8,9 @@ export interface SdsStream {
   Name: string;
   Description: string;
   TypeId: string;
+  Self: string;
+  TenantId: string;
+  TenantName: string;
+  NamespaceId: string;
+  CommunityId: string;
 }

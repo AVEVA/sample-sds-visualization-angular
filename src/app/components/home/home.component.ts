@@ -10,8 +10,9 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { MatTable } from '@angular/material/table';
 import { Chart, registerables, ScatterDataPoint } from 'chart.js';
 import 'chartjs-adapter-date-fns';
-import { interval, Observable, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
+import { interval, Observable, Subscription, from } from 'rxjs';
+import { debounceTime, mergeMap } from 'rxjs/operators';
 
 import {
   AppSettings,
@@ -38,10 +39,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('canvas') canvasEl: ElementRef;
 
   // Form Controls
-  namespaceCtrl = new FormControl();
+  organizationUnitCtrl = new FormControl();
   streamCtrl = new FormControl();
   streamForm = new FormGroup({
-    namespace: this.namespaceCtrl,
+    organizationUnit: this.organizationUnitCtrl,
     stream: this.streamCtrl,
   });
   eventsCtrl = new FormControl('100');
@@ -61,9 +62,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   subscription: Subscription;
   /** List of namespaces/communities in the tenant */
   organizationUnits: OrganizationUnit[] = [];
-  /** List of supported types in the namespace */
+  /** List of supported types in streams list*/
   types: SdsType[] = [];
-  /** List of supported streams in the namespace */
+  /** List of supported streams */
   streams: SdsStream[] = [];
   /** Suggested refresh interval options */
   refresh: number[] = [5, 15, 60, 300, 60000];
@@ -71,7 +72,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   events: number[] = [10, 50, 100, 500, 1000];
   /** Displayed columns in streams table */
   displayedColumns: string[] = [
-    'namespace',
+    'organizationUnit',
     'stream',
     'lastUpdate',
     'lastCount',
@@ -100,15 +101,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.sds.getNamespaces().subscribe((r) => {
       this.organizationUnits = r;
     });
-    this.sds.getCommunites().subscribe((r) => {
+    this.sds.getCommunities().subscribe((r) => {
       this.organizationUnits = [...this.organizationUnits, ...r];
     });
-    this.namespaceCtrl.valueChanges
+    this.organizationUnitCtrl.valueChanges
       .pipe(debounceTime(this.debounce))
-      .subscribe((v) => this.namespaceChanges(v));
+      .subscribe((v) => this.organizationUnitChanges(v));
     this.streamCtrl.valueChanges
       .pipe(debounceTime(this.debounce))
-      .subscribe((v) => this.queryStreams(this.namespaceCtrl.value, v));
+      .subscribe((v) => this.queryStreams(this.organizationUnitCtrl.value, v));
     this.eventsCtrl.valueChanges
       .pipe(debounceTime(this.debounce))
       .subscribe(() => this.updateData());
@@ -134,17 +135,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handles changes to namespace control, queries for supported types and streams
-   * @param namespace Unvalidated namespace form control value
+   * Handles changes to organizationUnit control, queries for supported types and streams
+   * @param organizationUnit Unvalidated organizationUnit form control value
    */
-  namespaceChanges(namespace: string): void {
-    if (this.organizationUnits.find((x) => x.Unit.Name === namespace)) {
-      this.sds
-        .getTypes(this.organizationUnits.find((x) => x.Unit.Name === namespace))
-        .subscribe((r) => {
-          this.types = r.filter((t) => this.isTypeSupported(t));
-          this.queryStreams(namespace, this.streamCtrl.value);
-        });
+  organizationUnitChanges(organizationUnit: string): void {
+    if (this.organizationUnits.find((x) => x.Unit.Name === organizationUnit)) {
+      this.queryStreams(organizationUnit, this.streamCtrl.value);
     }
   }
 
@@ -175,45 +171,54 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param property SdsProperty to check compatibility against as a key
    */
   isPropertyKey(property: SdsTypeProperty): boolean {
-    return (
+    var r =
       property.IsKey &&
       (property.Order || 0) === 0 &&
-      SdsTypeCodeMap[property.SdsType.SdsTypeCode] > 0
-    );
+      SdsTypeCodeMap[property.SdsType.SdsTypeCode] > 0;
+    return r;
   }
 
   /**
-   * Query for streams in a namespace and filter for streams with supported type
-   * @param namespace Unvalidated namespace form control value
+   * Query for streams in a organizationUnit and filter for streams with supported type
+   * @param organizationUnit Unvalidated organizationUnit form control value
    * @param query Unvalidated stream form control value, used as query
    */
-  queryStreams(namespace: string, query: string): void {
-    if (this.organizationUnits.find((x) => x.Unit.Name === namespace)) {
+  queryStreams(organizationUnit: string, query: string): void {
+    if (this.organizationUnits.find((x) => x.Unit.Name === organizationUnit)) {
       this.sds
         .getStreams(
-          this.organizationUnits.find((x) => x.Unit.Name === namespace),
+          this.organizationUnits.find((x) => x.Unit.Name === organizationUnit),
           query
         )
         .subscribe((r) => {
-          this.streams = r.filter((s) =>
-            this.types.some((t) => s.TypeId === t.Id)
-          );
+          this.streams = r;
+          forkJoin(
+            this.streams.map((s) =>
+              this.sds.getType(
+                this.organizationUnits.find(
+                  (x) => x.Unit.Name === organizationUnit
+                ),
+                s
+              )
+            )
+          ).subscribe((t) => (this.types = t));
         });
     }
   }
 
   /** Add a stream to the chart from current form control values */
   addStream(): void {
+    const unit = this.organizationUnits.find(
+      (x) => x.Unit.Name === this.organizationUnitCtrl.value
+    );
     const stream = this.streams.find((s) => s.Id === this.streamCtrl.value);
     const type = this.types.find((t) => t.Id === stream.TypeId);
     const key = type.Properties.find((p) => this.isPropertyKey(p));
     // This should either initialize isTime or not change its value
     this.isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
     const config: StreamConfig = {
-      unit: this.organizationUnits.find(
-        (x) => x.Unit.Name === this.namespaceCtrl.value
-      ),
-      stream: stream.Id,
+      unit: unit,
+      stream: stream,
       key: key.Id,
       valueFields: type.Properties.filter(
         (p) => !p.IsKey && SdsTypeCodeMap[p.SdsType.SdsTypeCode]
@@ -228,7 +233,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     for (const k of config.valueFields) {
       const color = this.getColor();
       this.chart.data.datasets.push({
-        label: `${config.stream}.${k}`,
+        label: `${config.stream.Id}.${k}`,
         borderColor: color,
         fill: false,
         data: [],
@@ -275,13 +280,13 @@ export class HomeComponent implements OnInit, OnDestroy {
             if (data?.length > 0) {
               const datasets: { [key: string]: ScatterDataPoint[] } = {};
               for (const f of s.valueFields) {
-                datasets[`${s.stream}.${f}`] = [];
+                datasets[`${s.stream.Id}.${f}`] = [];
               }
               for (const e of data) {
                 const keyVal = e[s.key];
                 const x = this.isTime ? new Date(keyVal) : keyVal;
                 for (const f of s.valueFields) {
-                  datasets[`${s.stream}.${f}`].push({ x, y: e[f] });
+                  datasets[`${s.stream.Id}.${f}`].push({ x, y: e[f] });
                 }
               }
               this.updateChart(datasets);

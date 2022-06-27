@@ -8,7 +8,7 @@ import { OidcService } from '~/services';
 
 @Injectable({ providedIn: 'root' })
 export class AuthorizationGuard implements CanActivate {
-  get frameElement(): Element {
+  get frameElement(): Element | boolean {
     return window.frameElement;
   }
 

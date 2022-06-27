@@ -186,8 +186,8 @@ describe('HomeComponent', () => {
       component.ngOnInit();
       component.organizationUnitCtrl.setValue('');
       component.streamCtrl.setValue('');
-      component.eventsCtrl.setValue(100);
-      component.refreshCtrl.setValue(5000);
+      component.eventsCtrl.setValue('100');
+      component.refreshCtrl.setValue('5000');
       tick(); // Wait for debounce
       expect(component.organizationUnitChanges).toHaveBeenCalled();
       expect(component.queryStreams).toHaveBeenCalled();

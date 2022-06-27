@@ -1,7 +1,7 @@
 {
   "name": "sample-sds-visualization-angular",
   "description": "Angular visualization sample for the Sequential Data Store",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "author": "OSIsoft, LLC",
   "license": "Apache-2.0",
   "repository": {

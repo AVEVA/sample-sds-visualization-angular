@@ -237,13 +237,8 @@ describe('HomeComponent', () => {
     it('should query types and streams', () => {
       spyOn(sds, 'getStreams').and.returnValue(of([stream]));
       spyOn(sds, 'getType').and.returnValue(of(supportedType));
-      spyOn(component, 'queryStreams');
       component.organizationUnits = [organizationUnit];
       component.organizationUnitChanges(organizationUnit.Unit.Name);
-      expect(component.queryStreams).toHaveBeenCalledWith(
-        organizationUnit.Unit.Name,
-        null
-      );
       expect(sds.getStreams).toHaveBeenCalledWith(organizationUnit, null);
       expect(sds.getType).toHaveBeenCalledWith(organizationUnit, stream);
       expect(component.types).toEqual([supportedType]);
@@ -452,7 +447,7 @@ describe('HomeComponent', () => {
       component.organizationUnits = [organizationUnit];
       component.streams = [stream];
       component.types = [supportedType];
-      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Id);
+      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Name);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.getChart).not.toHaveBeenCalled();

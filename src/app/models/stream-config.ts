@@ -1,9 +1,10 @@
-import { SdsNamespace } from './sds-namespace';
+import { OrganizationUnit } from './organization-unit';
+import { SdsStream } from './sds-stream';
 
 /** A stream configuration for the chart */
 export interface StreamConfig {
-  namespace: SdsNamespace;
-  stream: string;
+  unit: OrganizationUnit;
+  stream: SdsStream;
   key: string;
   valueFields: string[];
   lastUpdate?: string;

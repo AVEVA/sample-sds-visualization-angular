@@ -1,4 +1,8 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -7,7 +11,11 @@ import {
   AppSettings,
   DEFAULT,
   DIAGNOSTICS,
+  OrganizationUnit,
+  OrganizationUnitType,
+  SdsCommunity,
   SdsNamespace,
+  SdsResolvedStream,
   SdsStream,
   SdsType,
   SETTINGS,
@@ -17,7 +25,12 @@ import {
 export class SdsService {
   /** The base URL for namespaces in the SDS instance and tenant */
   get baseUrl(): string {
-    return `${this.settings.Resource}/api/${this.settings.ApiVersion}/Tenants/${this.settings.TenantId}/Namespaces`;
+    return `${this.settings.Resource}/api/${this.settings.ApiVersion}/Tenants/${this.settings.TenantId}`;
+  }
+
+  /** The base preview URL for namespaces in the SDS instance and tenant */
+  get basePreviewUrl(): string {
+    return `${this.settings.Resource}/api/${this.settings.ApiVersion}-preview/Tenants/${this.settings.TenantId}`;
   }
 
   constructor(
@@ -29,59 +42,123 @@ export class SdsService {
    * Creates a representation of an EDS namespace as a full SDS Namespace object
    * @param id The ID of the EDS namespace, 'default' or 'diagnostics'
    */
-  edsNamespace(id: typeof DEFAULT | typeof DIAGNOSTICS): SdsNamespace {
+  edsNamespace(id: typeof DEFAULT | typeof DIAGNOSTICS): OrganizationUnit {
     return {
-      Id: id,
-      Description: '',
-      InstanceId: '',
-      Region: '',
-      Self: `${this.baseUrl}/${id}`,
+      Unit: {
+        Id: id,
+        Name: id,
+        Description: '',
+        InstanceId: '',
+        Region: '',
+        Self: `${this.baseUrl}/Namespaces/${id}`,
+      },
+      Type: OrganizationUnitType.Namespace,
     };
   }
 
   /**
-   * Gets hard-coded namespaces from EDS, or makes an HTTP request for list of namespaces from ADH, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/Management/Account_Namespace_1.html#get-all-namespaces
+   * Makes an HTTP request for list of communities from ADH, see
+   * {@link https://docs.osisoft.com/bundle/data-hub/page/api-reference/community/community-communities.html
    * |ADH Documentation}
    */
-  getNamespaces(): Observable<SdsNamespace[]> {
+  getCommunities(): Observable<OrganizationUnit[]> {
+    if (this.settings.TenantId === DEFAULT) {
+      return of([]);
+    } else {
+      return this.http.get(`${this.basePreviewUrl}/Communities`).pipe(
+        map((r) =>
+          (r as SdsCommunity[]).map((r) => {
+            return { Unit: r, Type: OrganizationUnitType.Community };
+          })
+        ),
+        catchError(this.handleError('Error getting communities'))
+      );
+    }
+  }
+
+  /**
+   * Gets hard-coded namespaces from EDS, or makes an HTTP request for list of namespaces from ADH, see
+   * {@link https://docs.osisoft.com/bundle/data-hub/page/api-reference/tenant/tenant-namespaces.html
+   * |ADH Documentation}
+   */
+  getNamespaces(): Observable<OrganizationUnit[]> {
     if (this.settings.TenantId === DEFAULT) {
       return of([this.edsNamespace(DEFAULT), this.edsNamespace(DIAGNOSTICS)]);
     } else {
-      return this.http.get(this.baseUrl).pipe(
-        map((r) => r as SdsNamespace[]),
+      return this.http.get(`${this.baseUrl}/Namespaces`).pipe(
+        map((r) =>
+          (r as SdsNamespace[]).map((r) => {
+            return { Unit: r, Type: OrganizationUnitType.Namespace };
+          })
+        ),
         catchError(this.handleError('Error getting namespaces'))
       );
     }
   }
 
   /**
-   * Makes a request for types in a specified namespace, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#get-types|ADH Documentation} and
-   * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Types/SDSType_API_1-0.html#get-types|EDS Documentation}
-   * @param namespace The namespace ID to query types against
+   * Makes a request for streams in a specified namespace/community matching a search pattern, see
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html#get-streams| ADH Documentation}
+   * and {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Streams/Sds_Streams_API_1-0.html#get-streams| EDS Documentation}
+   * @param unit The namespace/community to query streams against
+   * @param query The string search for streams
    */
-  getTypes(namespace: SdsNamespace): Observable<SdsType[]> {
-    return this.http.get(`${namespace.Self}/Types`).pipe(
-      map((r) => r as SdsType[]),
-      catchError(this.handleError('Error getting types'))
-    );
+  getStreams(unit: OrganizationUnit, query: string): Observable<SdsStream[]> {
+    if (unit.Type === OrganizationUnitType.Namespace) {
+      return this.http
+        .get(
+          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Streams?query=${
+            query || ''
+          }*`
+        )
+        .pipe(
+          map((r) => r as SdsStream[]),
+          catchError(this.handleError('Error getting streams'))
+        );
+    } else {
+      return this.http
+        .get(
+          `${this.settings.Resource}/api/${
+            this.settings.ApiVersion
+          }-preview/Search/Communities/${unit.Unit.Id}/Streams?query=${
+            query || ''
+          }*`,
+          { headers: new HttpHeaders().set('Community-Id', unit.Unit.Id) }
+        )
+        .pipe(
+          map((r) => r as SdsStream[]),
+          catchError(this.handleError('Error getting streams'))
+        );
+    }
   }
 
   /**
-   * Makes a request for streams in a specified namespace matching a search pattern, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html#get-streams|ADH Documentation}
-   * and {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Streams/Sds_Streams_API_1-0.html#get-streams| EDS Documentation}
-   * @param namespace The namespace ID to query streams against
-   * @param query The string search for streams
+   * Makes a request for type of a specified stream
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#get-types|ADH Documentation} and
+   * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Types/SDSType_API_1-0.html#get-types|EDS Documentation}
+   * @param unit The namespace/community to query types against
+   * @param stream The stream to query a type for
    */
-  getStreams(namespace: SdsNamespace, query: string): Observable<SdsStream[]> {
-    return this.http
-      .get(`${namespace.Self}/Streams?query=${query || ''}*`)
-      .pipe(
-        map((r) => r as SdsStream[]),
-        catchError(this.handleError('Error getting streams'))
-      );
+  getType(unit: OrganizationUnit, stream: SdsStream): Observable<SdsType> {
+    if (unit.Type === OrganizationUnitType.Namespace) {
+      return this.http
+        .get(
+          `${this.basePreviewUrl}/Namespaces/${unit.Unit.Id}/Streams/${stream.Id}/Resolved`
+        )
+        .pipe(
+          map((r) => (r as SdsResolvedStream).Type),
+          catchError(this.handleError('Error getting type'))
+        );
+    } else {
+      return this.http
+        .get(`${stream.Self}/Resolved`, {
+          headers: new HttpHeaders().set('Community-Id', unit.Unit.Id),
+        })
+        .pipe(
+          map((r) => (r as SdsResolvedStream).Type),
+          catchError(this.handleError('Error getting type'))
+        );
+    }
   }
 
   /**
@@ -89,13 +166,23 @@ export class SdsService {
    * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#get-last-value
    * |ADH Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Read%20data/Reading_Data_API_1-0.html#get-last-value|EDS Documentation}
-   * @param namespace The namespace ID of the specified stream
-   * @param stream The stream ID to query last value against
+   * @param unit The namespace/community of the specified stream
+   * @param stream The stream to query last value against
    */
-  getLastValue(namespace: SdsNamespace, stream: string): Observable<any> {
-    return this.http
-      .get(`${namespace.Self}/Streams/${stream}/Data/Last`)
-      .pipe(catchError(this.handleError('Error getting last value')));
+  getLastValue(unit: OrganizationUnit, stream: SdsStream): Observable<any> {
+    if (unit.Type === OrganizationUnitType.Namespace) {
+      return this.http
+        .get(
+          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Streams/${stream.Id}/Data/Last`
+        )
+        .pipe(catchError(this.handleError('Error getting last value')));
+    } else {
+      return this.http
+        .get(`${stream.Self}/Data/Last`, {
+          headers: new HttpHeaders().set('Community-Id', unit.Unit.Id),
+        })
+        .pipe(catchError(this.handleError('Error getting last value')));
+    }
   }
 
   /**
@@ -103,37 +190,57 @@ export class SdsService {
    * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#range|ADH Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Read%20data/Reading_Data_API_1-0.html#range|EDS Documentation}
    * @param namespace The namespace ID of the specified stream
-   * @param stream The stream ID to query range values against
+   * @param stream The stream to query range values against
    * @param startIndex The starting index of the query range
    * @param count The number of values to request
    * @param reversed Optional direction of the request. By default, range request move forward from the startIndex, but a reversed request
    * moves backward from the startIndex.
    */
   getRangeValues(
-    namespace: SdsNamespace,
-    stream: string,
+    unit: OrganizationUnit,
+    stream: SdsStream,
     startIndex: string,
     count: number,
     reversed = false
   ): Observable<any[]> {
-    return this.http
-      .get(
-        `${
-          namespace.Self
-        }/Streams/${stream}/Data?startIndex=${startIndex}&count=${count}${
-          reversed ? '&reversed=true' : ''
-        }`,
-        {
-          headers: {
-            Accept: 'application/json',
-            'Accept-Verbosity': 'verbose',
-          },
-        }
-      )
-      .pipe(
-        map((r) => r as any[]),
-        catchError(this.handleError('Error getting range values'))
-      );
+    if (unit.Type === OrganizationUnitType.Namespace) {
+      return this.http
+        .get(
+          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Streams/${
+            stream.Id
+          }/Data?startIndex=${startIndex}&count=${count}${
+            reversed ? '&reversed=true' : ''
+          }`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Accept-Verbosity': 'verbose',
+            },
+          }
+        )
+        .pipe(
+          map((r) => r as any[]),
+          catchError(this.handleError('Error getting range values'))
+        );
+    } else {
+      return this.http
+        .get(
+          `${stream.Self}/Data?startIndex=${startIndex}&count=${count}${
+            reversed ? '&reversed=true' : ''
+          }`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Accept-Verbosity': 'verbose',
+              'Community-Id': unit.Unit.Id,
+            },
+          }
+        )
+        .pipe(
+          map((r) => r as any[]),
+          catchError(this.handleError('Error getting range values'))
+        );
+    }
   }
 
   handleError(msg: string): (error: HttpErrorResponse) => Observable<never> {

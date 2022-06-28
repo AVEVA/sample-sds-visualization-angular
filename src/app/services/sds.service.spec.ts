@@ -10,6 +10,9 @@ import {
   AppSettings,
   DEFAULT,
   DIAGNOSTICS,
+  OrganizationUnit,
+  OrganizationUnitType,
+  SdsCommunity,
   SdsNamespace,
   SdsStream,
   SdsType,
@@ -22,12 +25,34 @@ describe('SdsService', () => {
   let service: SdsService;
   let http: HttpTestingController;
   const settings: AppSettings = { ...mockSettings };
-  const namespace: SdsNamespace = {
-    Id: 'Id',
+  const organizationUnit: OrganizationUnit = {
+    Unit: {
+      Id: 'Id',
+      Name: 'Name',
+      Description: 'Description',
+      InstanceId: 'InstanceId',
+      Region: 'Region',
+      Self: 'Self',
+    },
+    Type: OrganizationUnitType.Namespace,
+  };
+  const type: SdsType = {
+    Id: 'TypeId',
+    Name: 'Name',
     Description: 'Description',
-    InstanceId: 'InstanceId',
-    Region: 'Region',
+    SdsTypeCode: SdsTypeCode.Object,
+    Properties: null,
+  };
+  const stream: SdsStream = {
+    Id: 'Id',
+    Name: 'Name',
+    Description: 'Description',
+    TypeId: 'TypeId',
     Self: 'Self',
+    TenantId: 'TenantId',
+    TenantName: 'TenantName',
+    NamespaceId: 'NamespaceId',
+    CommunityId: 'CommunityId',
   };
 
   beforeEach(() => {
@@ -45,13 +70,10 @@ describe('SdsService', () => {
   });
 
   describe('edsNamespace', () => {
-    it('should create a namespace object for EDS', () => {
+    it('should create an organization unit object for EDS', () => {
       const id = 'diagnostics';
       const result = service.edsNamespace(id);
-      expect(result.Id).toEqual(id);
-      expect(result.Self).toEqual(
-        'Resource/api/v1/Tenants/TenantId/Namespaces/' + id
-      );
+      expect(result.Unit.Id).toEqual(id);
     });
   });
 
@@ -62,7 +84,7 @@ describe('SdsService', () => {
 
     it('should get hard coded list for EDS', () => {
       settings.TenantId = DEFAULT;
-      let result: SdsNamespace[];
+      let result: OrganizationUnit[];
       service.getNamespaces().subscribe((r) => (result = r));
       expect(result).toEqual([
         service.edsNamespace(DEFAULT),
@@ -71,54 +93,84 @@ describe('SdsService', () => {
     });
 
     it('should get namespaces from SDS', () => {
-      let result: SdsNamespace[];
+      let result: OrganizationUnit[];
       service.getNamespaces().subscribe((r) => (result = r));
       const ns = service.edsNamespace('diagnostics');
-      http.expectOne(service.baseUrl).flush([ns]);
+      http
+        .expectOne('Resource/api/v1/Tenants/TenantId/Namespaces')
+        .flush([ns.Unit]);
       expect(result).toEqual([ns]);
     });
   });
 
-  describe('getTypes', () => {
-    it('should get types from SDS', () => {
-      const type: SdsType = {
-        Id: 'Id',
-        Name: 'Name',
-        Description: 'Description',
-        SdsTypeCode: SdsTypeCode.Object,
-        Properties: null,
+  describe('getCommunities', () => {
+    afterEach(() => {
+      settings.TenantId = mockSettings.TenantId;
+    });
+
+    it('should get nothing for EDS', () => {
+      settings.TenantId = DEFAULT;
+      let result: OrganizationUnit[];
+      service.getCommunities().subscribe((r) => (result = r));
+      expect(result).toEqual([]);
+    });
+
+    it('should get namespaces from SDS', () => {
+      let result: OrganizationUnit[];
+      service.getCommunities().subscribe((r) => (result = r));
+      const ns: OrganizationUnit = {
+        Unit: {
+          Id: 'CommunityId',
+          Name: 'CommunityName',
+          Description: '',
+          InstanceId: '',
+          Region: '',
+          Self: '',
+        },
+        Type: OrganizationUnitType.Community,
       };
-      let result: SdsType[];
-      service.getTypes(namespace).subscribe((r) => (result = r));
-      http.expectOne('Self/Types').flush([type]);
-      expect(result).toEqual([type]);
+      http
+        .expectOne('Resource/api/v1-preview/Tenants/TenantId/Communities')
+        .flush([ns.Unit]);
+      expect(result).toEqual([ns]);
+    });
+  });
+
+  describe('getType', () => {
+    it('should get types from SDS', () => {
+      let result: SdsType;
+      service.getType(organizationUnit, stream).subscribe((r) => (result = r));
+      http
+        .expectOne(
+          'Resource/api/v1-preview/Tenants/TenantId/Namespaces/Id/Streams/Id/Resolved'
+        )
+        .flush({ Type: type });
+      expect(result).toEqual(type);
     });
   });
 
   describe('getStreams', () => {
     it('should get streams from SDS', () => {
-      const stream: SdsStream = {
-        Id: 'Id',
-        Name: 'Name',
-        Description: 'Description',
-        TypeId: 'TypeId',
-      };
       let result: SdsStream[];
-      service.getStreams(namespace, 'Query').subscribe((r) => (result = r));
-      http.expectOne('Self/Streams?query=Query*').flush([stream]);
+      service
+        .getStreams(organizationUnit, 'Query')
+        .subscribe((r) => (result = r));
+      http
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams?query=Query*'
+        )
+        .flush([stream]);
       expect(result).toEqual([stream]);
     });
 
     it('should handle null query', () => {
-      const stream: SdsStream = {
-        Id: 'Id',
-        Name: 'Name',
-        Description: 'Description',
-        TypeId: 'TypeId',
-      };
       let result: SdsStream[];
-      service.getStreams(namespace, null).subscribe((r) => (result = r));
-      http.expectOne('Self/Streams?query=*').flush([stream]);
+      service.getStreams(organizationUnit, null).subscribe((r) => (result = r));
+      http
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams?query=*'
+        )
+        .flush([stream]);
       expect(result).toEqual([stream]);
     });
   });
@@ -127,8 +179,14 @@ describe('SdsService', () => {
     it('should get the latest value from SDS', () => {
       const last = 'last';
       let result: any;
-      service.getLastValue(namespace, 'Stream').subscribe((r) => (result = r));
-      http.expectOne('Self/Streams/Stream/Data/Last').flush(last);
+      service
+        .getLastValue(organizationUnit, stream)
+        .subscribe((r) => (result = r));
+      http
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams/Id/Data/Last'
+        )
+        .flush(last);
       expect(result).toEqual(last);
     });
   });
@@ -138,10 +196,12 @@ describe('SdsService', () => {
       const data = ['a', 'b', 'c'];
       let result: any[];
       service
-        .getRangeValues(namespace, 'Stream', 'StartIndex', 3)
+        .getRangeValues(organizationUnit, stream, 'StartIndex', 3)
         .subscribe((r) => (result = r));
       http
-        .expectOne('Self/Streams/Stream/Data?startIndex=StartIndex&count=3')
+        .expectOne(
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams/Id/Data?startIndex=StartIndex&count=3'
+        )
         .flush(data);
       expect(result).toEqual(data);
     });
@@ -150,11 +210,11 @@ describe('SdsService', () => {
       const data = ['a', 'b', 'c'];
       let result: any[];
       service
-        .getRangeValues(namespace, 'Stream', 'StartIndex', 3, true)
+        .getRangeValues(organizationUnit, stream, 'StartIndex', 3, true)
         .subscribe((r) => (result = r));
       http
         .expectOne(
-          'Self/Streams/Stream/Data?startIndex=StartIndex&count=3&reversed=true'
+          'Resource/api/v1/Tenants/TenantId/Namespaces/Id/Streams/Id/Data?startIndex=StartIndex&count=3&reversed=true'
         )
         .flush(data);
       expect(result).toEqual(data);

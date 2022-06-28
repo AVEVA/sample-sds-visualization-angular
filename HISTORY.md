@@ -1,6 +1,6 @@
 # Version History
 
-## 1.0.14 / 2022-06-27
+## 1.1.0 / 2022-06-27
 
 - Add Communities support
 

@@ -90,13 +90,6 @@ describe('HomeComponent', () => {
       },
     ],
   };
-  const unsupportedType: SdsType = {
-    Id: 'TypeId',
-    Name: '',
-    Description: '',
-    SdsTypeCode: SdsTypeCode.Double,
-    Properties: null,
-  };
   const emptyType: SdsType = {
     Id: 'TypeId',
     Name: '',

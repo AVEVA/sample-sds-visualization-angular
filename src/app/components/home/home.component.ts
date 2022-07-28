@@ -11,8 +11,8 @@ import { MatTable } from '@angular/material/table';
 import { Chart, registerables, ScatterDataPoint } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { forkJoin } from 'rxjs';
-import { interval, Observable, Subscription, from } from 'rxjs';
-import { debounceTime, mergeMap } from 'rxjs/operators';
+import { interval, Observable, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import {
   AppSettings,
@@ -171,7 +171,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param property SdsProperty to check compatibility against as a key
    */
   isPropertyKey(property: SdsTypeProperty): boolean {
-    var r =
+    const r =
       property.IsKey &&
       (property.Order || 0) === 0 &&
       SdsTypeCodeMap[property.SdsType.SdsTypeCode] > 0;

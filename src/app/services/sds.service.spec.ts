@@ -12,8 +12,6 @@ import {
   DIAGNOSTICS,
   OrganizationUnit,
   OrganizationUnitType,
-  SdsCommunity,
-  SdsNamespace,
   SdsStream,
   SdsType,
   SdsTypeCode,

@@ -33,11 +33,19 @@ variables:
   - name: analysisProject
     value: SDS_Viz_Angular
 
+parameters:
+  - name: pool
+    default: 00-OSIManaged-Containers
+  - name: containerDemands
+    type: object
+    default: ['Agent.OS -equals Windows_NT']
+
 jobs:
   - job: Tests
+    condition: ne(variables['Build.Reason'], 'Schedule')
     pool:
-      name: 00-OSIManaged-Containers
-      demands: Agent.OS -equals Windows_NT
+      name: ${{ parameters.pool }}
+      demands: ${{ parameters.containerDemands }}
     steps:
       - script: npm ci
         displayName: 'Install dependencies'

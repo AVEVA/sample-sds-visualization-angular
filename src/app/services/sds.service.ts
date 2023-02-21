@@ -140,7 +140,17 @@ export class SdsService {
    * @param stream The stream to query a type for
    */
   getType(unit: OrganizationUnit, stream: SdsStream): Observable<SdsType> {
-    if (unit.Type === OrganizationUnitType.Namespace) {
+    if (this.settings.TenantId === DEFAULT) {
+      return this.http
+        .get(
+          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Types/${stream.TypeId}`
+        )
+        .pipe(
+          map((r) => (r as SdsType)),
+          catchError(this.handleError('Error getting type'))
+        );
+    }
+    else if (unit.Type === OrganizationUnitType.Namespace) {
       return this.http
         .get(
           `${this.basePreviewUrl}/Namespaces/${unit.Unit.Id}/Streams/${stream.Id}/Resolved`

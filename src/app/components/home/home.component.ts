@@ -24,6 +24,7 @@ import {
   OrganizationUnit,
 } from '~/models';
 import { SdsTypeProperty } from '~/models/sds-property';
+import { SdsTypeCodeNumeric } from '~/models/sds-type-code-numeric';
 import { StreamConfig } from '~/models/stream-config';
 import { SdsService } from '~/services';
 
@@ -87,14 +88,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     const stream = this.streams.find((s) => s.Id === this.streamCtrl.value);
     const type = this.types.find((t) => t.Id === stream?.TypeId);
     const key = type?.Properties?.find((p) => this.isPropertyKey(p));
-    const isTime = key && key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
+    const isTime = key && (key.SdsType.SdsTypeCode === SdsTypeCode.DateTime || key.SdsType.SdsTypeCode === SdsTypeCodeNumeric.DateTime);
     return isTime == null || (this.isTime != null && this.isTime !== isTime);
   }
 
   constructor(
     public sds: SdsService,
     @Inject(SETTINGS) public settings: AppSettings
-  ) {}
+  ) { }
 
   /** Set up the component when Angular is ready */
   ngOnInit(): void {
@@ -173,8 +174,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   isPropertyKey(property: SdsTypeProperty): boolean {
     const r =
       property.IsKey &&
-      (property.Order || 0) === 0 &&
-      SdsTypeCodeMap[property.SdsType.SdsTypeCode] > 0;
+      (property.Order || 0) === 0;
     return r;
   }
 
@@ -215,7 +215,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const type = this.types.find((t) => t.Id === stream.TypeId);
     const key = type.Properties.find((p) => this.isPropertyKey(p));
     // This should either initialize isTime or not change its value
-    this.isTime = key.SdsType.SdsTypeCode === SdsTypeCode.DateTime;
+    this.isTime = (key.SdsType.SdsTypeCode === SdsTypeCode.DateTime || key.SdsType.SdsTypeCode === SdsTypeCodeNumeric.DateTime);
     const config: StreamConfig = {
       unit: unit,
       stream: stream,
@@ -309,6 +309,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         d.data = datasets[d.label];
       }
     });
+
+    console.log(this.chart.data.datasets);
 
     this.chart.update();
   }

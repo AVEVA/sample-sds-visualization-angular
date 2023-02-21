@@ -1,5 +1,6 @@
 import { SdsTypeProperty } from './sds-property';
 import { SdsTypeCode } from './sds-type-code';
+import { SdsTypeCodeNumeric } from './sds-type-code-numeric';
 
 /**
  * SDS Type representation, see
@@ -10,6 +11,6 @@ export interface SdsType {
   Id: string;
   Name: string;
   Description: string;
-  SdsTypeCode: SdsTypeCode;
+  SdsTypeCode: SdsTypeCode | SdsTypeCodeNumeric;
   Properties: SdsTypeProperty[] | null;
 }

@@ -1,5 +1,9 @@
 # Version History
 
+## 1.1.5 / 2023-02-21
+
+- Fix broken EDS functionality
+
 ## 1.1.4 / 2022-08-17
 
 - Automate dependabot approval and automerge

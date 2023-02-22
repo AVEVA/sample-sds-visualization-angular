@@ -174,7 +174,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   isPropertyKey(property: SdsTypeProperty): boolean {
     const r =
       property.IsKey &&
-      (property.Order || 0) === 0;
+      (property.Order || 0) === 0 &&
+      SdsTypeCodeMap[property.SdsType.SdsTypeCode] > 0;
     return r;
   }
 
@@ -309,8 +310,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         d.data = datasets[d.label];
       }
     });
-
-    console.log(this.chart.data.datasets);
 
     this.chart.update();
   }

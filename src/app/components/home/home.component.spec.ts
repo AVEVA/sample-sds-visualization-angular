@@ -422,7 +422,6 @@ describe('HomeComponent', () => {
       component.organizationUnits = [organizationUnit];
       component.streams = [stream];
       component.types = [supportedType];
-      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Id);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.configs.length).toEqual(1);
@@ -441,8 +440,6 @@ describe('HomeComponent', () => {
       component.organizationUnits = [organizationUnit];
       component.streams = [stream];
       component.types = [supportedType];
-      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Name);
-      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Id);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.getChart).not.toHaveBeenCalled();

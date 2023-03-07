@@ -4,7 +4,7 @@
  * {@link https://docs.osisoft.com/bundle/edge-data-store/page/sds/types/sds-type-code.html|EDS Documentation}
  */
 export enum SdsTypeCode {
-  Object = 'Object ',
+  Object = 'Object',
   Int16 = 'Int16',
   UInt16 = 'UInt16',
   Int32 = 'Int32',

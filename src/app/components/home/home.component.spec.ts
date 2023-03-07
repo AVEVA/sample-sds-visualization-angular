@@ -422,7 +422,6 @@ describe('HomeComponent', () => {
       component.organizationUnits = [organizationUnit];
       component.streams = [stream];
       component.types = [supportedType];
-      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Id);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.configs.length).toEqual(1);
@@ -435,12 +434,12 @@ describe('HomeComponent', () => {
     });
 
     it('should skip creating a chart if one already exists', () => {
+      spyOn(component, 'updateData').and.callFake(function(){});
       component.chart = { update: () => {}, data: { datasets: [] } } as any;
       spyOn(component, 'getChart');
       component.organizationUnits = [organizationUnit];
       component.streams = [stream];
       component.types = [supportedType];
-      component.organizationUnitCtrl.setValue(organizationUnit.Unit.Name);
       component.streamCtrl.setValue(stream.Id);
       component.addStream();
       expect(component.getChart).not.toHaveBeenCalled();

@@ -27,7 +27,7 @@
     "@angular/material": "^15.2.4",
     "@angular/platform-browser": "^15.2.4",
     "@angular/platform-browser-dynamic": "^15.2.4",
-    "@angular/router": "^15.2.4",
+    "@angular/router": "^15.2.5",
     "@types/offscreencanvas": "^2019.7.0",
     "chart.js": "^4.2.1",
     "chartjs-adapter-date-fns": "^3.0.0",

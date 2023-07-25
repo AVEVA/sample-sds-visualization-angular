@@ -29,7 +29,7 @@
     "@angular/platform-browser-dynamic": "^15.2.5",
     "@angular/router": "^15.2.5",
     "@types/offscreencanvas": "^2019.7.0",
-    "chart.js": "^4.3.0",
+    "chart.js": "^4.3.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^2.30.0",
     "oidc-client": "^1.11.5",

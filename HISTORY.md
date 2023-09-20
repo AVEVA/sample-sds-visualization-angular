@@ -1,5 +1,9 @@
 # Version History
 
+## 1.1.6 / 2023-09-23
+
+- Fix dependencies and add support for dependabot groups
+
 ## 1.1.5 / 2023-02-21
 
 - Fix broken EDS functionality

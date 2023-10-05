@@ -42,7 +42,7 @@
     "@angular/cli": "^16.2.3",
     "@angular/compiler-cli": "^16.2.3",
     "@types/chart.js": "^2.9.37",
-    "@types/jasmine": "^4.3.5",
+    "@types/jasmine": "^5.1.0",
     "@types/node": "^20.3.3",
     "jasmine-core": "^5.0.1",
     "jasmine-spec-reporter": "~7.0.0",

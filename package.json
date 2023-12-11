@@ -34,7 +34,7 @@
     "date-fns": "^2.30.0",
     "oidc-client": "^1.11.5",
     "rxjs": "^7.8.0",
-    "tslib": "^2.6.0",
+    "tslib": "^2.6.2",
     "zone.js": "~0.13.1"
   },
   "devDependencies": {

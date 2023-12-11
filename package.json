@@ -53,6 +53,6 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "karma-junit-reporter": "^2.0.1",
     "ts-node": "^10.8.1",
-    "typescript": "~5.0.4"
+    "typescript": "~5.1.6"
   }
 }

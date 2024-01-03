@@ -1,5 +1,10 @@
 # Version History
 
+## 1.1.7 / 2024-01-03
+
+- Fix Type Script bug
+- Fix dependencies
+
 ## 1.1.6 / 2023-09-23
 
 - Fix dependencies and add support for dependabot groups

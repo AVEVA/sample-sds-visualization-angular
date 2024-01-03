@@ -17,7 +17,7 @@ export const SdsTypeCodeMap = {
   [SdsTypeCode.Int64]: DisplayType.Number,
   [SdsTypeCodeNumeric.Int64]: DisplayType.Number,
   [SdsTypeCode.UInt64]: DisplayType.Number,
-  [SdsTypeCodeNumeric.Int64]: DisplayType.Number,
+  [SdsTypeCodeNumeric.UInt64]: DisplayType.Number,
   [SdsTypeCode.Single]: DisplayType.Number,
   [SdsTypeCodeNumeric.Single]: DisplayType.Number,
   [SdsTypeCode.Double]: DisplayType.Number,

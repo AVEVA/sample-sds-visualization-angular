@@ -25,12 +25,18 @@ import {
 export class SdsService {
   /** The base URL for namespaces in the SDS instance and tenant */
   get baseUrl(): string {
-    return `${this.settings.Resource}/api/${this.settings.ApiVersion}/Tenants/${this.settings.TenantId}`;
+    return `${this.settings.Resource}/api/${this.settings.ApiVersion}`;
+  }
+  get baseTenantUrl(): string {
+    return `${this.baseUrl}/Tenants/${this.settings.TenantId}`;
   }
 
   /** The base preview URL for namespaces in the SDS instance and tenant */
   get basePreviewUrl(): string {
-    return `${this.settings.Resource}/api/${this.settings.ApiVersion}-preview/Tenants/${this.settings.TenantId}`;
+    return `${this.settings.Resource}/api/${this.settings.ApiVersion}-preview`;
+  }
+  get basePreviewTenantUrl(): string {
+    return `${this.baseUrl}/Tenants/${this.settings.TenantId}`;
   }
 
   constructor(
@@ -50,7 +56,7 @@ export class SdsService {
         Description: '',
         InstanceId: '',
         Region: '',
-        Self: `${this.baseUrl}/Namespaces/${id}`,
+        Self: `${this.baseTenantUrl}/Namespaces/${id}`,
       },
       Type: OrganizationUnitType.Namespace,
     };
@@ -85,7 +91,7 @@ export class SdsService {
     if (this.settings.TenantId === DEFAULT) {
       return of([this.edsNamespace(DEFAULT), this.edsNamespace(DIAGNOSTICS)]);
     } else {
-      return this.http.get(`${this.baseUrl}/Namespaces`).pipe(
+      return this.http.get(`${this.baseTenantUrl}/Namespaces`).pipe(
         map((r) =>
           (r as SdsNamespace[]).map((r) => {
             return { Unit: r, Type: OrganizationUnitType.Namespace };
@@ -107,9 +113,7 @@ export class SdsService {
     if (unit.Type === OrganizationUnitType.Namespace) {
       return this.http
         .get(
-          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Streams?query=${
-            query || ''
-          }*`
+          `${(unit.Unit as SdsNamespace).Self}/Streams?query=${query || ''}*`
         )
         .pipe(
           map((r) => r as SdsStream[]),
@@ -143,17 +147,16 @@ export class SdsService {
     if (this.settings.TenantId === DEFAULT) {
       return this.http
         .get(
-          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Types/${stream.TypeId}`
+          `${this.baseTenantUrl}/Namespaces/${unit.Unit.Id}/Types/${stream.TypeId}`
         )
         .pipe(
-          map((r) => (r as SdsType)),
+          map((r) => r as SdsType),
           catchError(this.handleError('Error getting type'))
         );
-    }
-    else if (unit.Type === OrganizationUnitType.Namespace) {
+    } else if (unit.Type === OrganizationUnitType.Namespace) {
       return this.http
         .get(
-          `${this.basePreviewUrl}/Namespaces/${unit.Unit.Id}/Streams/${stream.Id}/Resolved`
+          `${(unit.Unit as SdsNamespace).Self}/Streams/${stream.Id}/Resolved`
         )
         .pipe(
           map((r) => (r as SdsResolvedStream).Type),
@@ -183,7 +186,7 @@ export class SdsService {
     if (unit.Type === OrganizationUnitType.Namespace) {
       return this.http
         .get(
-          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Streams/${stream.Id}/Data/Last`
+          `${(unit.Unit as SdsNamespace).Self}/Streams/${stream.Id}/Data/Last`
         )
         .pipe(catchError(this.handleError('Error getting last value')));
     } else {
@@ -216,7 +219,7 @@ export class SdsService {
     if (unit.Type === OrganizationUnitType.Namespace) {
       return this.http
         .get(
-          `${this.baseUrl}/Namespaces/${unit.Unit.Id}/Streams/${
+          `${(unit.Unit as SdsNamespace).Self}/Streams/${
             stream.Id
           }/Data?startIndex=${startIndex}&count=${count}${
             reversed ? '&reversed=true' : ''

@@ -1,8 +1,13 @@
 # Version History
 
-## 1.1.7 / 2023-10-13
+## 1.1.8 / 2024-02-02
 
 - Migrate Pipelines
+
+## 1.1.7 / 2024-01-03
+
+- Fix Type Script bug
+- Fix dependencies
 
 ## 1.1.6 / 2023-09-23
 

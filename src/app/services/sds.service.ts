@@ -63,9 +63,9 @@ export class SdsService {
   }
 
   /**
-   * Makes an HTTP request for list of communities from ADH, see
+   * Makes an HTTP request for list of communities from Cds, see
    * {@link https://docs.osisoft.com/bundle/data-hub/page/api-reference/community/community-communities.html
-   * |ADH Documentation}
+   * |Cds Documentation}
    */
   getCommunities(): Observable<OrganizationUnit[]> {
     if (this.settings.TenantId === DEFAULT) {
@@ -83,9 +83,9 @@ export class SdsService {
   }
 
   /**
-   * Gets hard-coded namespaces from EDS, or makes an HTTP request for list of namespaces from ADH, see
+   * Gets hard-coded namespaces from EDS, or makes an HTTP request for list of namespaces from Cds, see
    * {@link https://docs.osisoft.com/bundle/data-hub/page/api-reference/tenant/tenant-namespaces.html
-   * |ADH Documentation}
+   * |Cds Documentation}
    */
   getNamespaces(): Observable<OrganizationUnit[]> {
     if (this.settings.TenantId === DEFAULT) {
@@ -104,7 +104,7 @@ export class SdsService {
 
   /**
    * Makes a request for streams in a specified namespace/community matching a search pattern, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html#get-streams| ADH Documentation}
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Streams.html#get-streams| Cds Documentation}
    * and {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Streams/Sds_Streams_API_1-0.html#get-streams| EDS Documentation}
    * @param unit The namespace/community to query streams against
    * @param query The string search for streams
@@ -138,7 +138,7 @@ export class SdsService {
 
   /**
    * Makes a request for type of a specified stream
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#get-types|ADH Documentation} and
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/SDS_Types.html#get-types|Cds Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Types/SDSType_API_1-0.html#get-types|EDS Documentation}
    * @param unit The namespace/community to query types against
    * @param stream The stream to query a type for
@@ -177,7 +177,7 @@ export class SdsService {
   /**
    * Makes a request for the latest value from a stream in a specified namespace, see
    * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#get-last-value
-   * |ADH Documentation} and
+   * |Cds Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Read%20data/Reading_Data_API_1-0.html#get-last-value|EDS Documentation}
    * @param unit The namespace/community of the specified stream
    * @param stream The stream to query last value against
@@ -200,7 +200,7 @@ export class SdsService {
 
   /**
    * Makes a request for a range of values from a stream in a specified namespace, see
-   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#range|ADH Documentation} and
+   * {@link https://ocs-docs.osisoft.com/Content_Portal/Documentation/SequentialDataStore/Reading_Data_API.html#range|Cds Documentation} and
    * {@link https://osisoft.github.io/Edge-Data-Store-Docs/V1/SDS/Read%20data/Reading_Data_API_1-0.html#range|EDS Documentation}
    * @param namespace The namespace ID of the specified stream
    * @param stream The stream to query range values against

@@ -21,7 +21,7 @@ export class AuthorizationGuard implements CanActivate {
   /** Determines whether the user is authenticated, or data source is EDS and user does not need to be authenticated */
   canActivate(): Observable<boolean> {
     if (this.settings.TenantId !== DEFAULT) {
-      // Data source is ADH, check OIDC service auth
+      // Data source is Cds, check OIDC service auth
       return this.oidc.checkAuth().pipe(
         switchMap((isAuthenticated) => {
           if (isAuthenticated) {

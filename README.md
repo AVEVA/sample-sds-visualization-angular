@@ -24,12 +24,12 @@ Before running the sample, you must first configure the `appsettings.json` file.
 
 Next, complete the configuration file for one of the following.
 
-### AVEVA Data Hub
+### CONNECT data services
 
-Before configuring the sample for ADH, you must first create an Authorization Code Client for use with the sample. This Authorization Code Client must contain `http://localhost:4200` in the list of RedirectUris.
+Before configuring the sample for Cds, you must first create an Authorization Code Client for use with the sample. This Authorization Code Client must contain `http://localhost:4200` in the list of RedirectUris.
 
 - `Resource`: This can usually be left as the default of `https://uswe.datahub.connect.aveva.com`. This URL is only used for authentication and querying the list of namespaces; if a namespace is in another region the application will use the URL of the namespace.
-- `TenantId`: If you are unsure what GUID to use, this is part of the Full Path in the API Console of AVEVA Data Hub, like `Tenants/{TenantId}/Namespaces`.
+- `TenantId`: If you are unsure what GUID to use, this is part of the Full Path in the API Console of CONNECT data services, like `Tenants/{TenantId}/Namespaces`.
 - `ApiVersion`: This should usually be left as the default of `v1`.
 - `ClientId`: The ID of the Authorization Code Client that was created for this sample.
 
@@ -61,5 +61,5 @@ Note that this sample is able to connect to a local Edge Data Store only; connec
 
 ---
 
-For the main ADH page [ReadMe](https://github.com/osisoft/OSI-Samples-OCS)  
-For the main samples page [ReadMe](https://github.com/osisoft/OSI-Samples)
+For the main Cds page [ReadMe](https://github.com/AVEVA/AVEVA-Samples-CloudOperations)  
+For the main samples page [ReadMe](https://github.com/AVEVA/AVEVA-Samples)

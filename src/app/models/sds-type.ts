@@ -4,7 +4,7 @@ import { SdsTypeCodeNumeric } from './sds-type-code-numeric';
 
 /**
  * SDS Type representation, see
- * {@link https://docs.osisoft.com/bundle/data-hub/page/add-organize-data/store-data/types/types-concept.html|ADH Documentation} and
+ * {@link https://docs.osisoft.com/bundle/data-hub/page/add-organize-data/store-data/types/types-concept.html|Cds Documentation} and
  * {@link https://docs.osisoft.com/bundle/edge-data-store/page/sds/sds-types.html|EDS Documentation}
  */
 export interface SdsType {

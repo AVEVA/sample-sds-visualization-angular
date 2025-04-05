@@ -1,6 +1,6 @@
 /**
  * SDS Type Code enumeration, see
- * {@link https://docs.osisoft.com/bundle/data-hub/page/developer-guide/sequential-data-store-dev/sds-types-dev.html#sdstypecode|ADH Documentation} and
+ * {@link https://docs.osisoft.com/bundle/data-hub/page/developer-guide/sequential-data-store-dev/sds-types-dev.html#sdstypecode|Cds Documentation} and
  * {@link https://docs.osisoft.com/bundle/edge-data-store/page/sds/types/sds-type-code.html|EDS Documentation}
  */
 export enum SdsTypeCodeNumeric {
